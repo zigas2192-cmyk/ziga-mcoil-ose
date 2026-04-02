@@ -939,11 +939,11 @@ async function editPO(pono){
     toast('โหลดไม่ได้: '+e.message);
   }
 }
+function printPO(){
   const pono = document.getElementById('f-pono').value || 'PO';
   document.title = `PO-${pono}`;
   window.print();
 }
-function printPOById(pono){ document.title=`PO-${pono}`; window.print(); }
 
 // ── S2: LC/FX ─────────────────────────────────────────────────
 let lcItemId = null;
