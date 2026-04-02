@@ -508,7 +508,7 @@ function doLogout(){
 
 function showLoginErr(msg){ const el=document.getElementById('login-err'); el.textContent=msg; el.style.display='block'; }
 
-function showApp(){
+async function showApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   const name = currentAccount.name || currentAccount.username;
@@ -516,14 +516,14 @@ function showApp(){
   const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('user-initials').textContent = initials;
   await loadChoices();
-  loadPOList();
-  populatePOSelects();
-  // populate static selects from choices
+  // populate Supplier select จาก choices
   const supSel = document.getElementById('f-supplier');
   if(supSel && choicesCache.Supplier.length){
     supSel.innerHTML = makeOpts(choicesCache.Supplier);
   }
   addLineItem(); // init 1 empty row for new PO form
+  loadPOList();
+  populatePOSelects();
 }
 
 // ── TOKEN ────────────────────────────────────────────────────
