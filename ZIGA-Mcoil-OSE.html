@@ -457,13 +457,14 @@ const L3 = 'mcoil-ose-L3_BL_Shipping';
 const SCOPES = ['Sites.ReadWrite.All','User.Read'];
 
 // ── L1 FIELD MAP (display name → Graph API internal name) ────
-// ได้จาก Console log: Supplier=field_2, GradeSpec=field_6, CoatingType=field_7, POStatus=field_12, Incoterms=field_16
+// internal names จาก Console log:
+// Supplier=field_2, GradeSpec=field_6, CoatingType=field_7
+// POStatus=field_12, Incoterms=field_16
+// custom columns (สร้างทีหลัง) ใช้ display name ตรงๆ
 const F = {
   PODate:          'field_1',
   Supplier:        'field_2',
   ContractNo:      'field_3',
-  SteelSize:       'SteelSize',          // custom column — ใช้ display name ตรงๆ
-  SteelThicknessSpec_AX: 'SteelThicknessSpec_AX',
   GradeSpec:       'field_6',
   CoatingType:     'field_7',
   CoilQty:         'field_8',
@@ -478,6 +479,9 @@ const F = {
   HasLC:           'field_20',
   HasBL:           'field_21',
   MTCReceived:     'field_22',
+  // custom columns — ใช้ display name (internal name = display name)
+  SteelSize:             'SteelSize',
+  SteelThicknessSpec_AX: 'SteelThicknessSpec_AX',
 };
 
 // ── DYNAMIC CHOICES CACHE ────────────────────────────────────
@@ -799,28 +803,31 @@ async function savePO(){
   const toISO = v => v ? new Date(v).toISOString() : null;
 
   const l1Fields = {
-    Title:         pono,
-    [F.PODate]:    toISO(podate),
-    [F.Supplier]:  supplier,
-    [F.ContractNo]:   document.getElementById('f-contract').value||null,
+    Title:              pono,
+    [F.PODate]:         toISO(podate),
+    [F.Supplier]:       supplier,
+    [F.ContractNo]:     document.getElementById('f-contract').value||null,
     [F.TotalWeightTon]: parseFloat(totalWeight.toFixed(3)),
-    [F.TotalUSD]:  parseFloat(totalUSD.toFixed(2)),
+    [F.TotalUSD]:       parseFloat(totalUSD.toFixed(2)),
     [F.AgreedDelivery]: toISO(document.getElementById('f-delivery').value),
-    [F.Incoterms]: document.getElementById('f-incoterms').value||null,
-    [F.PaymentTerms]: document.getElementById('f-payterms').value||null,
-    [F.Remark]:    document.getElementById('f-remark').value||null,
-    [F.POStatus]:  '1.Draft',
-    [F.HasLC]: false, [F.HasBL]: false, [F.MTCReceived]: false
+    [F.Incoterms]:      document.getElementById('f-incoterms').value||null,
+    [F.PaymentTerms]:   document.getElementById('f-payterms').value||null,
+    [F.Remark]:         document.getElementById('f-remark').value||null,
+    [F.POStatus]:       '1.Draft',
   };
   const uniqueSizes = [...new Set(lineItems.map(li=>li.steelSize).filter(Boolean))];
   if(uniqueSizes.length===1) l1Fields[F.SteelSize] = uniqueSizes[0];
-  Object.keys(l1Fields).forEach(k=>{ if(l1Fields[k]===null||l1Fields[k]==='') delete l1Fields[k]; });
+  // ลบ field ที่ว่างออก
+  Object.keys(l1Fields).forEach(k=>{ if(l1Fields[k]===null||l1Fields[k]===''||l1Fields[k]===undefined) delete l1Fields[k]; });
+  console.log('savePO L1 fields:', JSON.stringify(l1Fields));
 
   const icon = document.getElementById('save-icon');
   icon.innerHTML = '<span class="spinner"></span>';
   try {
     await createListItem(L1, l1Fields);
-    await Promise.all(lineItems.map((li,idx)=>createListItem(L1b,{
+
+    // L1b line items — ใช้ display name ตรงๆ (custom columns)
+    const l1bItems = lineItems.map((li,idx)=>({
       Title:                 `${pono}-${String(idx+1).padStart(2,'0')}`,
       PONo:                  pono,
       SteelSize:             li.steelSize,
@@ -830,7 +837,9 @@ async function savePO(){
       TotalWeightTon:        li.weight,
       PriceUSD:              li.price,
       TotalUSD:              li.total
-    })));
+    }));
+    console.log('savePO L1b[0]:', JSON.stringify(l1bItems[0]));
+    await Promise.all(l1bItems.map(fields=>createListItem(L1b, fields)));
 
     icon.innerHTML='';
     toast(`บันทึก PO สำเร็จ ✓  ${lineItems.length} รายการ / ${totalWeight.toFixed(1)} ต. / $${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})}`);
