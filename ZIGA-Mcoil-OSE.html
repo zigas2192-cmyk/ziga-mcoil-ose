@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ZIGA-Mcoil-OSE</title>
+<script src="https://unpkg.com/@azure/msal-browser@3.10.0/lib/msal-browser.min.js"></script>
+<style>
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --border: #e8e8e4;
+  --border-strong: #d0d0c8;
+  --text: #1a1a18;
+  --text-muted: #6b6b66;
+  --text-hint: #a0a09a;
+  --accent: #1a56db;
+  --accent-hover: #1447c0;
+  --accent-bg: #eff4ff;
+  --success: #166534;
+  --success-bg: #dcfce7;
+  --warning: #92400e;
+  --warning-bg: #fef3c7;
+  --danger: #991b1b;
+  --danger-bg: #fee2e2;
+  --gray-bg: #f1f1ee;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+
+/* ── Layout ── */
+#app{display:flex;flex-direction:column;min-height:100vh;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.topbar-logo{font-size:13px;font-weight:700;background:var(--accent);color:#fff;padding:3px 10px;border-radius:5px;letter-spacing:.3px;}
+.topbar-name{font-size:14px;font-weight:600;color:var(--text);}
+.topbar-sep{color:var(--border-strong);}
+.topbar-user{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);}
+.topbar-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.tabs-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;}
+.tab{font-size:13px;font-weight:500;padding:12px 18px;color:var(--text-muted);border-bottom:2px solid transparent;cursor:pointer;transition:color .15s;white-space:nowrap;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.main{flex:1;padding:24px;max-width:1100px;width:100%;margin:0 auto;}
+.screen{display:none;}
+.screen.active{display:block;}
+
+/* ── Login ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:48px 40px;width:360px;text-align:center;box-shadow:var(--shadow);}
+.login-logo{font-size:15px;font-weight:700;background:var(--accent);color:#fff;padding:6px 14px;border-radius:6px;display:inline-block;margin-bottom:24px;}
+.login-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--text-muted);margin-bottom:32px;}
+.btn-login{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;}
+.btn-login:hover{background:var(--accent-hover);}
+.ms-icon{width:18px;height:18px;}
+
+/* ── Buttons ── */
+.btn{padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);transition:background .12s;}
+.btn:hover{background:var(--gray-bg);}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
+.btn-sm{padding:4px 10px;font-size:12px;}
+.btn-ghost{border-color:transparent;background:transparent;}
+.btn-ghost:hover{background:var(--gray-bg);}
+
+/* ── Cards & Sections ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:16px;}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.card-title{font-size:14px;font-weight:600;color:var(--text);}
+.section-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-hint);margin-bottom:10px;}
+
+/* ── Metrics ── */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
+.metric-label{font-size:11px;color:var(--text-muted);margin-bottom:4px;}
+.metric-value{font-size:22px;font-weight:700;color:var(--text);}
+.metric-sub{font-size:11px;color:var(--text-hint);margin-top:2px;}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);background:var(--gray-bg);border-bottom:1px solid var(--border);}
+td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--gray-bg);}
+
+/* ── Form ── */
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:12px;font-weight:500;color:var(--text-muted);}
+.field label .req{color:#e53e3e;margin-left:2px;}
+.field input,.field select,.field textarea{
+  padding:7px 10px;border:1px solid var(--border-strong);border-radius:var(--radius);
+  font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color .12s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.08);}
+.field input[readonly]{background:var(--gray-bg);color:var(--text-muted);}
+.field textarea{resize:vertical;min-height:64px;}
+.form-actions{display:flex;gap:8px;margin-top:4px;}
+
+/* ── Badge ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-blue{background:var(--accent-bg);color:var(--accent);}
+.badge-green{background:var(--success-bg);color:var(--success);}
+.badge-amber{background:var(--warning-bg);color:var(--warning);}
+.badge-red{background:var(--danger-bg);color:var(--danger);}
+.badge-gray{background:var(--gray-bg);color:var(--text-muted);}
+
+/* ── Progress ── */
+.progress-wrap{background:var(--gray-bg);border-radius:20px;height:8px;overflow:hidden;margin:6px 0 2px;}
+.progress-bar{height:100%;background:var(--accent);border-radius:20px;transition:width .3s;}
+
+/* ── Timeline ── */
+.timeline{display:flex;align-items:flex-start;gap:0;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
+.tl-step{display:flex;flex-direction:column;align-items:center;min-width:100px;}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;z-index:1;}
+.tl-dot-done{background:var(--success-bg);color:var(--success);}
+.tl-dot-active{background:var(--accent-bg);color:var(--accent);border:2px solid var(--accent);}
+.tl-dot-pending{background:var(--gray-bg);color:var(--text-hint);}
+.tl-label{font-size:11px;font-weight:500;color:var(--text-muted);margin-top:4px;text-align:center;}
+.tl-date{font-size:10px;color:var(--text-hint);text-align:center;}
+.tl-line{flex:1;height:2px;background:var(--border);margin-top:14px;min-width:20px;}
+.tl-line-done{background:var(--success);}
+
+/* ── Alerts ── */
+.alert{padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:12px;}
+.alert-info{background:var(--accent-bg);color:var(--accent);}
+.alert-err{background:var(--danger-bg);color:var(--danger);}
+
+/* ── Spinner ── */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 18px;border-radius:var(--radius);font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999;}
+#toast.show{opacity:1;}
+
+/* ── Modal ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--radius-lg);padding:24px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.modal-title{font-size:15px;font-weight:700;}
+.modal-close{background:none;border:none;font-size:20px;color:var(--text-muted);cursor:pointer;line-height:1;}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:48px 20px;color:var(--text-muted);}
+.empty-icon{font-size:32px;margin-bottom:8px;opacity:.5;}
+
+/* ── Print ── */
+@media print {
+  .topbar,.tabs-bar,.form-actions,.btn,.tbl-actions,#toast{display:none!important;}
+  .main{padding:0;}
+  .card{border:1px solid #ccc;box-shadow:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">ZIGA</div>
+    <div class="login-title">Mcoil-OSE</div>
+    <div class="login-sub">ระบบจัดการใบสั่งซื้อ · LC/FX · ชิปปิ้ง<br>เข้าสู่ระบบด้วยบัญชี @ziga.co.th</div>
+    <button class="btn-login" onclick="doLogin()">
+      <svg class="ms-icon" viewBox="0 0 21 21" fill="none">
+        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+      </svg>
+      เข้าสู่ระบบด้วย Microsoft
+    </button>
+    <div id="login-err" style="margin-top:12px;font-size:12px;color:var(--danger);display:none;"></div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div id="app" style="display:none;">
+  <div class="topbar">
+    <span class="topbar-logo">ZIGA</span>
+    <span class="topbar-sep">/</span>
+    <span class="topbar-name">Mcoil-OSE</span>
+    <div class="topbar-user">
+      <div class="topbar-avatar" id="user-initials">--</div>
+      <span id="user-name">...</span>
+      <button class="btn btn-sm btn-ghost" onclick="doLogout()">ออก</button>
+    </div>
+  </div>
+  <div class="tabs-bar">
+    <div class="tab active" onclick="switchTab(0)">M1 รายการ PO</div>
+    <div class="tab" onclick="switchTab(1)">M1 สร้าง PO ใหม่</div>
+    <div class="tab" onclick="switchTab(2)">M2 LC / FX</div>
+    <div class="tab" onclick="switchTab(3)">M3 ชิปปิ้ง</div>
+  </div>
+  <div class="main">
+
+    <!-- S0: PO LIST -->
+    <div class="screen active" id="s0">
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">PO ทั้งหมด</div><div class="metric-value" id="m-total">—</div><div class="metric-sub">ปี 2026</div></div>
+        <div class="metric"><div class="metric-label">มูลค่ารวม (USD)</div><div class="metric-value" id="m-usd">—</div><div class="metric-sub" id="m-thb">—</div></div>
+        <div class="metric"><div class="metric-label">รอ LC / อยู่ระหว่างขนส่ง</div><div class="metric-value" id="m-status">—</div><div class="metric-sub">รายการที่ต้องติดตาม</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">รายการ PO</span>
+          <div style="margin-left:auto;display:flex;gap:8px;">
+            <button class="btn btn-sm" onclick="loadPOList()"><span id="refresh-icon">↻</span> รีเฟรช</button>
+            <button class="btn btn-sm btn-primary" onclick="switchTab(1)">+ สร้าง PO ใหม่</button>
+          </div>
+        </div>
+        <div id="po-loading" class="alert alert-info" style="display:none;">กำลังโหลด...</div>
+        <div id="po-error" class="alert alert-err" style="display:none;"></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>PO No.</th><th>วันที่ PO</th><th>Supplier</th><th>สเปก</th>
+                <th>จำนวน (ลูก)</th><th>มูลค่า (USD)</th><th>สถานะ</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="po-tbody"><tr><td colspan="8" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- S1: NEW PO FORM -->
+    <div class="screen" id="s1">
+      <div class="card">
+        <div class="card-header"><span class="card-title">ข้อมูล PO หลัก</span></div>
+        <div class="form-grid-3">
+          <div class="field"><label>PO No.<span class="req">*</span></label><input id="f-pono" placeholder="เช่น PO2026-004"/></div>
+          <div class="field"><label>วันที่ PO<span class="req">*</span></label><input id="f-podate" type="date"/></div>
+          <div class="field"><label>Supplier<span class="req">*</span></label>
+            <select id="f-supplier"><option value="">-- เลือก --</option><option>HBIS HANDAN</option><option>HBIS CHENGDE</option><option>RZ Rizhao Baohua</option></select>
+          </div>
+        </div>
+        <div class="form-grid-3">
+          <div class="field"><label>Contract No.</label><input id="f-contract" placeholder="เช่น HF00001004"/></div>
+          <div class="field"><label>Incoterms</label>
+            <select id="f-incoterms"><option>CFR</option><option>FOB</option><option>CIF</option><option>EXW</option></select>
+          </div>
+          <div class="field"><label>Payment Terms</label><input id="f-payterms" placeholder="เช่น LC at sight"/></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">ข้อมูลเหล็ก</span></div>
+        <div class="form-grid-3">
+          <div class="field"><label>ความหนา (มม.)</label><input id="f-thick" type="number" step="0.1" placeholder="เช่น 2.8"/></div>
+          <div class="field"><label>ความกว้าง (มม.)</label><input id="f-width" type="number" placeholder="เช่น 1250"/></div>
+          <div class="field"><label>Grade / Spec</label><select id="f-grade"><option value="">-- เลือก --</option><option>JIS G3302-CGI-มอก.50</option><option>JIS G3302-HGI-มอก.3243</option><option>JIS G3323-HGI-มอก.2981</option></select></div>
+        </div>
+        <div class="form-grid-3">
+          <div class="field"><label>Coating Type</label>
+            <select id="f-coating"><option value="">-- เลือก --</option><option>Z060</option><option>Z080</option><option>Z100</option><option>Z120</option><option>Z275</option><option>Z450</option><option>Z500</option><option>Z600</option><option>K060</option><option>K080</option><option>K450</option></select>
+          </div>
+          <div class="field"><label>จำนวน Coil (ลูก)</label><input id="f-coilqty" type="number" oninput="calcTotal()"/></div>
+          <div class="field"><label>น้ำหนักรวม (ตัน)</label><input id="f-weight" type="number" step="0.1"/></div>
+        </div>
+        <div class="form-grid-2">
+          <div class="field"><label>ราคา/ตัน (USD)</label><input id="f-price" type="number" step="0.01" oninput="calcTotal()"/></div>
+          <div class="field"><label>มูลค่ารวม (USD) — คำนวณอัตโนมัติ</label><input id="f-total" readonly placeholder="กรอก Coil และราคา/ตัน ก่อน"/></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Logistics</span></div>
+        <div class="form-grid-3">
+          <div class="field"><label>Port of Loading</label><input id="f-portload" placeholder="เช่น Tianjin"/></div>
+          <div class="field"><label>Port of Destination</label><input id="f-portdest" placeholder="เช่น Laem Chabang"/></div>
+          <div class="field"><label>วันที่ส่งมอบที่ตกลง</label><input id="f-delivery" type="date"/></div>
+        </div>
+        <div class="field"><label>หมายเหตุ</label><textarea id="f-remark" placeholder="หมายเหตุเพิ่มเติม..."></textarea></div>
+      </div>
+      <div id="save-err" class="alert alert-err" style="display:none;"></div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="savePO()"><span id="save-icon"></span> บันทึก PO</button>
+        <button class="btn" onclick="printPO()">Print PDF</button>
+        <button class="btn btn-ghost" onclick="clearForm();switchTab(0)">ยกเลิก</button>
+      </div>
+    </div>
+
+    <!-- S2: LC/FX -->
+    <div class="screen" id="s2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">เลือก PO ที่ต้องการบันทึก LC/FX</span>
+        </div>
+        <div class="field" style="max-width:320px;">
+          <label>PO No.</label>
+          <select id="lc-po-select" onchange="loadLCRecord()"><option value="">-- เลือก PO --</option></select>
+        </div>
+      </div>
+      <div id="lc-form" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" id="lc-po-title">LC / FX</span>
+            <span id="lc-po-badge" class="badge badge-blue" style="margin-left:8px;"></span>
+          </div>
+          <div class="form-grid-3" style="margin-bottom:12px;">
+            <div class="field"><label>LC No.</label><input id="lc-no" placeholder="เช่น LC2026-001"/></div>
+            <div class="field"><label>ธนาคาร</label><input id="lc-bank" placeholder="เช่น กสิกรไทย"/></div>
+            <div class="field"><label>วันที่เปิด LC</label><input id="lc-open" type="date"/></div>
+          </div>
+          <div class="form-grid-3">
+            <div class="field"><label>วงเงิน LC (USD)</label><input id="lc-amount" type="number" oninput="calcLCRemain()"/></div>
+            <div class="field"><label>วันหมดอายุ LC</label><input id="lc-expire" type="date"/></div>
+            <div class="field"><label>สถานะ LC</label>
+              <select id="lc-status"><option>Draft</option><option>Opened</option><option>Amended</option><option>Utilized</option><option>Expired</option><option>Cancelled</option></select>
+            </div>
+          </div>
+          <div style="margin:14px 0 6px;">
+            <div class="section-title">วงเงินที่ใช้ไปแล้ว</div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+              <span style="color:var(--text-muted);">วงเงิน LC (USD)</span>
+              <span id="lc-used-text" style="font-weight:600;">—</span>
+            </div>
+            <div class="progress-wrap"><div class="progress-bar" id="lc-bar" style="width:0%"></div></div>
+            <div id="lc-remain-text" style="font-size:12px;color:var(--text-hint);"></div>
+          </div>
+          <div style="border-top:1px solid var(--border);margin:14px 0 12px;"></div>
+          <div class="section-title">อัตราแลกเปลี่ยน (FX)</div>
+          <div class="form-grid-3">
+            <div class="field"><label>FX Rate (THB/USD)</label><input id="fx-rate" type="number" step="0.01" oninput="calcTHB()"/></div>
+            <div class="field"><label>ประเภท FX</label>
+              <select id="fx-type"><option>Forward</option><option>Spot</option><option>TT</option></select>
+            </div>
+            <div class="field"><label>มูลค่ารวม (THB) — อัตโนมัติ</label><input id="fx-thb" readonly/></div>
+          </div>
+          <div class="field" style="margin-top:10px;"><label>หมายเหตุ</label><textarea id="lc-remark"></textarea></div>
+        </div>
+        <div id="lc-save-err" class="alert alert-err" style="display:none;"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveLC()">บันทึก LC/FX</button>
+          <button class="btn" onclick="printLC()">Print PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3: SHIPPING -->
+    <div class="screen" id="s3">
+      <div class="card">
+        <div class="card-header"><span class="card-title">เลือก PO ที่ต้องการบันทึก Shipping</span></div>
+        <div class="field" style="max-width:320px;">
+          <label>PO No.</label>
+          <select id="sh-po-select" onchange="loadShipRecord()"><option value="">-- เลือก PO --</option></select>
+        </div>
+      </div>
+      <div id="sh-form" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" id="sh-po-title">สถานะการขนส่ง</span>
+            <span id="sh-badge" class="badge badge-amber" style="margin-left:8px;"></span>
+          </div>
+          <div class="timeline" id="sh-timeline"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Bill of Lading</span></div>
+          <div class="form-grid-3" style="margin-bottom:12px;">
+            <div class="field"><label>BL No.</label><input id="sh-blno" placeholder="เช่น BL2026-001"/></div>
+            <div class="field"><label>วันที่ BL</label><input id="sh-bldate" type="date"/></div>
+            <div class="field"><label>Vessel / ชื่อเรือ</label><input id="sh-vessel" placeholder="เช่น EVER GOLDEN"/></div>
+          </div>
+          <div class="form-grid-3" style="margin-bottom:12px;">
+            <div class="field"><label>ETD (วันออกเรือ)</label><input id="sh-etd" type="date" oninput="updateTimeline()"/></div>
+            <div class="field"><label>ETA (วันถึงท่า)</label><input id="sh-eta" type="date" oninput="updateTimeline()"/></div>
+            <div class="field"><label>วันถึงโรงงานจริง</label><input id="sh-arrived" type="date" oninput="updateTimeline()"/></div>
+          </div>
+          <div class="form-grid-3">
+            <div class="field"><label>น้ำหนักรวม BL (ตัน)</label><input id="sh-weight" type="number" step="0.1"/></div>
+            <div class="field"><label>จำนวน Coil</label><input id="sh-coil" type="number"/></div>
+            <div class="field"><label>จำนวนรถขนส่ง <span style="color:var(--accent);font-size:10px;">(trigger Carbon)</span></label><input id="sh-trucks" type="number" placeholder="จำนวนรถ"/></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">MTC (Mill Test Certificate)</span></div>
+          <div class="form-grid-2" style="margin-bottom:10px;">
+            <div class="field"><label>เลข Certificate</label><input id="sh-mtcno" placeholder="เช่น RE2026022600003"/></div>
+            <div class="field"><label>MTC ได้รับแล้ว</label>
+              <select id="sh-mtc"><option value="No">No</option><option value="Yes">Yes</option></select>
+            </div>
+          </div>
+          <div class="field"><label>สถานะการขนส่ง</label>
+            <select id="sh-status" onchange="updateTimeline()" style="max-width:260px;">
+              <option>Booking</option><option>Sailed</option><option>Arrived Port</option>
+              <option>Customs Cleared</option><option>Delivered</option><option>Completed</option>
+            </select>
+          </div>
+          <div class="field" style="margin-top:10px;"><label>หมายเหตุ</label><textarea id="sh-remark"></textarea></div>
+        </div>
+        <div id="sh-save-err" class="alert alert-err" style="display:none;"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="saveShipping()">บันทึก Shipping</button>
+          <button class="btn" onclick="printShipping()">Print PDF</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+const CLIENT_ID  = 'ab04415b-543c-441d-86ab-6d024b26df56';
+const TENANT_ID  = '2c7e3ab4-6d2f-491e-87cc-8be0a96f1a68';
+const SITE_ID    = 'zigainnovation.sharepoint.com,/sites/msteams_1fdd76';
+const SITE_PATH  = 'https://graph.microsoft.com/v1.0/sites/zigainnovation.sharepoint.com:/sites/msteams_1fdd76:';
+const L1 = 'mcoil-ose-L1_PurchaseOrder';
+const L2 = 'mcoil-ose-L2_LC_FX';
+const L3 = 'mcoil-ose-L3_BL_Shipping';
+const SCOPES = ['Sites.ReadWrite.All','User.Read'];
+
+// ── MSAL ────────────────────────────────────────────────────
+const msalConfig = {
+  auth:{ clientId:CLIENT_ID, authority:`https://login.microsoftonline.com/${TENANT_ID}`, redirectUri: window.location.origin+window.location.pathname },
+  cache:{ cacheLocation:'sessionStorage' }
+};
+const msalApp = new msal.PublicClientApplication(msalConfig);
+let currentAccount = null;
+
+async function initMsal(){
+  await msalApp.initialize();
+  const resp = await msalApp.handleRedirectPromise();
+  if(resp && resp.account){
+    currentAccount = resp.account;
+    showApp();
+  } else {
+    const accounts = msalApp.getAllAccounts();
+    if(accounts.length > 0){ currentAccount = accounts[0]; showApp(); }
+  }
+}
+
+async function doLogin(){
+  try{ await msalApp.loginRedirect({ scopes: SCOPES }); }
+  catch(e){ showLoginErr(e.message); }
+}
+
+function doLogout(){
+  msalApp.logoutPopup({ account: currentAccount }).then(()=>{ currentAccount=null; location.reload(); });
+}
+
+function showLoginErr(msg){ const el=document.getElementById('login-err'); el.textContent=msg; el.style.display='block'; }
+
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  const name = currentAccount.name || currentAccount.username;
+  document.getElementById('user-name').textContent = name;
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('user-initials').textContent = initials;
+  loadPOList();
+  populatePOSelects();
+}
+
+// ── TOKEN ────────────────────────────────────────────────────
+async function getToken(){
+  const req = { scopes: SCOPES, account: currentAccount };
+  try { return (await msalApp.acquireTokenSilent(req)).accessToken; }
+  catch { return (await msalApp.acquireTokenPopup(req)).accessToken; }
+}
+
+// ── GRAPH HELPERS ────────────────────────────────────────────
+async function graphGet(url){
+  const token = await getToken();
+  const r = await fetch(url, { headers:{ Authorization:`Bearer ${token}` } });
+  if(!r.ok) throw new Error((await r.json()).error?.message || r.statusText);
+  return r.json();
+}
+async function graphPost(url, body){
+  const token = await getToken();
+  const r = await fetch(url, { method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+  if(!r.ok) throw new Error((await r.json()).error?.message || r.statusText);
+  return r.json();
+}
+async function graphPatch(url, body){
+  const token = await getToken();
+  const r = await fetch(url, { method:'PATCH', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+  if(!r.ok) throw new Error((await r.json()).error?.message || r.statusText);
+  return r.json();
+}
+
+async function getListItems(listName, select='*', filter=''){
+  let url = `${SITE_PATH}/lists/${listName}/items?expand=fields(select=${select})`;
+  if(filter) url += `&$filter=${filter}`;
+  const data = await graphGet(url);
+  return data.value.map(i=>({id:i.id,...i.fields}));
+}
+async function createListItem(listName, fields){
+  return graphPost(`${SITE_PATH}/lists/${listName}/items`, { fields });
+}
+async function updateListItem(listName, itemId, fields){
+  return graphPatch(`${SITE_PATH}/lists/${listName}/items/${itemId}/fields`, fields);
+}
+
+// ── TABS ─────────────────────────────────────────────────────
+function switchTab(i){
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+  document.querySelectorAll('.screen').forEach((s,j)=>s.classList.toggle('active',i===j));
+  if(i===0) loadPOList();
+  if(i===2||i===3) populatePOSelects();
+}
+
+// ── STATUS BADGE ─────────────────────────────────────────────
+function statusBadge(s){
+  const map={'Draft':'badge-gray','Confirmed':'badge-blue','LC Opened':'badge-blue','Shipped':'badge-amber','Arrived':'badge-amber','Completed':'badge-green','Cancelled':'badge-red'};
+  return `<span class="badge ${map[s]||'badge-gray'}">${s||'—'}</span>`;
+}
+
+// ── S0: PO LIST ───────────────────────────────────────────────
+let poData = [];
+async function loadPOList(){
+  const tbody = document.getElementById('po-tbody');
+  const err = document.getElementById('po-error');
+  const loading = document.getElementById('po-loading');
+  err.style.display='none'; loading.style.display='block';
+  tbody.innerHTML='';
+  try {
+    poData = await getListItems(L1, 'Title,field_1,field_2,field_4,field_5,field_8,field_11,field_12');
+    loading.style.display='none';
+    if(!poData.length){ tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div>ยังไม่มีข้อมูล PO</div></td></tr>'; return; }
+
+    let totalUSD=0, waitLC=0, inTransit=0;
+    poData.forEach(p=>{
+      totalUSD += parseFloat(p.field_11)||0;
+      if(p.field_12==='2.Confirmed') waitLC++;
+      if(p.field_12==='4.Shipped'||p.field_12==='5.Arrived') inTransit++;
+      const date = p.field_1 ? p.field_1.substring(0,10) : '—';
+      const spec = [p.field_4?`${p.field_4}mm`:'', p.field_5?`${p.field_5}mm`:''].filter(Boolean).join(' × ') || '—';
+      tbody.innerHTML += `<tr>
+        <td><strong>${p.Title||'—'}</strong></td>
+        <td>${date}</td>
+        <td>${p.field_2||'—'}</td>
+        <td>${spec}</td>
+        <td>${p.field_8||'—'}</td>
+        <td>${p.field_11 ? Number(p.field_11).toLocaleString() : '—'}</td>
+        <td>${statusBadge(p.field_12)}</td>
+        <td>
+          <button class="btn btn-sm btn-ghost" onclick="openLCForPO('${p.Title}')">LC</button>
+          <button class="btn btn-sm btn-ghost" onclick="openShipForPO('${p.Title}')">Ship</button>
+          <button class="btn btn-sm btn-ghost" onclick="printPOById('${p.Title}')">PDF</button>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('m-total').textContent = poData.length;
+    document.getElementById('m-usd').textContent = totalUSD.toLocaleString(undefined,{maximumFractionDigits:0});
+    document.getElementById('m-status').textContent = `${waitLC} / ${inTransit}`;
+  } catch(e){
+    loading.style.display='none';
+    err.textContent = 'โหลดข้อมูลไม่ได้: '+e.message; err.style.display='block';
+  }
+}
+
+function openLCForPO(pono){ document.getElementById('lc-po-select').value=pono; switchTab(2); loadLCRecord(); }
+function openShipForPO(pono){ document.getElementById('sh-po-select').value=pono; switchTab(3); loadShipRecord(); }
+
+async function populatePOSelects(){
+  if(!poData.length) poData = await getListItems(L1,'Title,field_2,field_11,field_12').catch(()=>[]);
+  ['lc-po-select','sh-po-select'].forEach(id=>{
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">-- เลือก PO --</option>';
+    poData.forEach(p=>{ sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${p.field_2||''}</option>`; });
+    if(cur) sel.value = cur;
+  });
+}
+
+// ── S1: NEW PO FORM ───────────────────────────────────────────
+function calcTotal(){
+  const qty = parseFloat(document.getElementById('f-coilqty').value)||0;
+  const price = parseFloat(document.getElementById('f-price').value)||0;
+  const weight = parseFloat(document.getElementById('f-weight').value)||0;
+  const total = weight>0 ? (weight * price).toFixed(2) : (qty * price).toFixed(2);
+  document.getElementById('f-total').value = parseFloat(total)>0 ? Number(total).toLocaleString() : '';
+}
+
+function clearForm(){
+  ['f-pono','f-podate','f-contract','f-payterms','f-thick','f-width','f-grade','f-weight','f-coilqty','f-price','f-total','f-portload','f-portdest','f-delivery','f-remark']
+    .forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('f-supplier').value='';
+  document.getElementById('f-coating').value='';
+  document.getElementById('save-err').style.display='none';
+}
+
+async function savePO(){
+  const pono = document.getElementById('f-pono').value.trim();
+  const supplier = document.getElementById('f-supplier').value;
+  const podate = document.getElementById('f-podate').value;
+  const errEl = document.getElementById('save-err');
+  errEl.style.display='none';
+  if(!pono||!supplier||!podate){ errEl.textContent='กรุณากรอก PO No., Supplier และวันที่ PO'; errEl.style.display='block'; return; }
+
+  const totalRaw = document.getElementById('f-total').value.replace(/,/g,'');
+  const toISO = v => v ? new Date(v).toISOString() : null;
+  const fields = {
+    Title: pono,
+    field_1: toISO(podate),
+    field_3: document.getElementById('f-contract').value||null,
+    field_4: parseFloat(document.getElementById('f-thick').value)||null,
+    field_5: parseFloat(document.getElementById('f-width').value)||null,
+    field_8: parseInt(document.getElementById('f-coilqty').value)||null,
+    field_9: parseFloat(document.getElementById('f-weight').value)||null,
+    field_10: parseFloat(document.getElementById('f-price').value)||null,
+    field_11: parseFloat(totalRaw)||null,
+    field_14: document.getElementById('f-portload').value||null,
+    field_15: document.getElementById('f-portdest').value||null,
+    field_13: toISO(document.getElementById('f-delivery').value),
+    field_17: document.getElementById('f-payterms').value||null,
+    field_19: document.getElementById('f-remark').value||null,
+    field_20: false, field_21: false, field_22: false
+  };
+  Object.keys(fields).forEach(k => { if(fields[k]===null||fields[k]==='') delete fields[k]; });
+
+  const icon = document.getElementById('save-icon');
+  icon.innerHTML = '<span class="spinner"></span>';
+  try {
+    await createListItem(L1, fields);
+    icon.innerHTML='';
+    toast('บันทึก PO สำเร็จ ✓');
+    clearForm();
+    poData=[];
+    switchTab(0);
+  } catch(e){
+    icon.innerHTML='';
+    errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block';
+  }
+}
+
+function printPO(){
+  const pono = document.getElementById('f-pono').value || 'PO';
+  document.title = `PO-${pono}`;
+  window.print();
+}
+function printPOById(pono){ document.title=`PO-${pono}`; window.print(); }
+
+// ── S2: LC/FX ─────────────────────────────────────────────────
+let lcItemId = null;
+async function loadLCRecord(){
+  const pono = document.getElementById('lc-po-select').value;
+  const form = document.getElementById('lc-form');
+  if(!pono){ form.style.display='none'; return; }
+  form.style.display='block';
+  document.getElementById('lc-po-title').textContent = `LC/FX — ${pono}`;
+  const po = poData.find(p=>p.Title===pono);
+  document.getElementById('lc-po-badge').textContent = po?.field_12||'';
+  document.getElementById('lc-po-badge').className = 'badge badge-blue';
+
+  // load existing LC record
+  lcItemId = null;
+  try {
+    const items = await getListItems(L2,'*',`fields/Title eq '${pono}'`);
+    if(items.length){
+      const lc = items[0]; lcItemId = lc.id;
+      document.getElementById('lc-no').value = lc.LCNo||'';
+      document.getElementById('lc-bank').value = lc.Bank||'';
+      document.getElementById('lc-open').value = lc.LCOpenDate?.substring(0,10)||'';
+      document.getElementById('lc-expire').value = lc.LCExpireDate?.substring(0,10)||'';
+      document.getElementById('lc-amount').value = lc.LCAmountUSD||'';
+      document.getElementById('lc-status').value = lc.LCStatus||'Opened';
+      document.getElementById('fx-rate').value = lc.FXRate||'';
+      document.getElementById('fx-type').value = lc.FXType||'Forward';
+      document.getElementById('lc-remark').value = lc.Remark||'';
+      calcLCRemain(); calcTHB();
+    }
+  } catch(e){ console.log('LC not found, new record'); }
+}
+
+function calcLCRemain(){
+  const amt = parseFloat(document.getElementById('lc-amount').value)||0;
+  const poUSD = poData.find(p=>p.Title===document.getElementById('lc-po-select').value)?.TotalUSD||0;
+  if(!amt){ document.getElementById('lc-used-text').textContent='—'; return; }
+  const pct = Math.min(100, Math.round((poUSD/amt)*100));
+  document.getElementById('lc-bar').style.width = pct+'%';
+  document.getElementById('lc-used-text').textContent = `USD ${Number(poUSD).toLocaleString()} / ${Number(amt).toLocaleString()}`;
+  document.getElementById('lc-remain-text').textContent = `${pct}% · คงเหลือ USD ${Number(amt-poUSD).toLocaleString()}`;
+}
+
+function calcTHB(){
+  const rate = parseFloat(document.getElementById('fx-rate').value)||0;
+  const pono = document.getElementById('lc-po-select').value;
+  const usd = poData.find(p=>p.Title===pono)?.TotalUSD||0;
+  if(rate && usd) document.getElementById('fx-thb').value = Number(usd*rate).toLocaleString(undefined,{maximumFractionDigits:0});
+  else document.getElementById('fx-thb').value='';
+}
+
+async function saveLC(){
+  const pono = document.getElementById('lc-po-select').value;
+  if(!pono) return;
+  const thbRaw = document.getElementById('fx-thb').value.replace(/,/g,'');
+  const fields = {
+    Title: `LC-${pono}`,
+    PONo: pono,
+    LCNo: document.getElementById('lc-no').value||null,
+    Bank: document.getElementById('lc-bank').value||null,
+    LCOpenDate: document.getElementById('lc-open').value ? new Date(document.getElementById('lc-open').value).toISOString() : null,
+    LCExpireDate: document.getElementById('lc-expire').value ? new Date(document.getElementById('lc-expire').value).toISOString() : null,
+    LCAmountUSD: parseFloat(document.getElementById('lc-amount').value)||null,
+    LCStatus: document.getElementById('lc-status').value,
+    FXRate: parseFloat(document.getElementById('fx-rate').value)||null,
+    FXType: document.getElementById('fx-type').value,
+    TotalTHB: parseFloat(thbRaw)||null,
+    Remark: document.getElementById('lc-remark').value||null
+  };
+  const errEl = document.getElementById('lc-save-err');
+  errEl.style.display='none';
+  try {
+    if(lcItemId) await updateListItem(L2, lcItemId, fields);
+    else await createListItem(L2, fields);
+    // update L1 HasLC
+    const po = poData.find(p=>p.Title===pono);
+    if(po?.id) await updateListItem(L1, po.id, { field_20: true, field_12: '3.LC Opened' }).catch(()=>{});
+    toast('บันทึก LC/FX สำเร็จ ✓');
+    poData=[]; loadPOList();
+  } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
+}
+
+function printLC(){ document.title='LC-'+document.getElementById('lc-po-select').value; window.print(); }
+
+// ── S3: SHIPPING ──────────────────────────────────────────────
+let shItemId = null;
+const SH_STEPS = ['Booking','Sailed','Arrived Port','Customs Cleared','Delivered','Completed'];
+
+async function loadShipRecord(){
+  const pono = document.getElementById('sh-po-select').value;
+  const form = document.getElementById('sh-form');
+  if(!pono){ form.style.display='none'; return; }
+  form.style.display='block';
+  document.getElementById('sh-po-title').textContent = `การขนส่ง — ${pono}`;
+  shItemId = null;
+  try {
+    const items = await getListItems(L3,'*',`fields/Title eq '${pono}'`);
+    if(items.length){
+      const sh = items[0]; shItemId = sh.id;
+      document.getElementById('sh-blno').value = sh.BLNo||'';
+      document.getElementById('sh-bldate').value = sh.BLDate?.substring(0,10)||'';
+      document.getElementById('sh-vessel').value = sh.VesselName||'';
+      document.getElementById('sh-etd').value = sh.ETD?.substring(0,10)||'';
+      document.getElementById('sh-eta').value = sh.ETA?.substring(0,10)||'';
+      document.getElementById('sh-arrived').value = sh.ActualArrival?.substring(0,10)||'';
+      document.getElementById('sh-weight').value = sh.BLWeightTon||'';
+      document.getElementById('sh-coil').value = sh.BLCoilQty||'';
+      document.getElementById('sh-trucks').value = sh.NumTrucks||'';
+      document.getElementById('sh-mtcno').value = sh.MTCCertNo||'';
+      document.getElementById('sh-mtc').value = sh.MTCReceived?'Yes':'No';
+      document.getElementById('sh-status').value = sh.ShipStatus||'Booking';
+      document.getElementById('sh-remark').value = sh.Remark||'';
+    }
+  } catch(e){ console.log('Ship not found'); }
+  updateTimeline();
+}
+
+function updateTimeline(){
+  const status = document.getElementById('sh-status').value;
+  const etd = document.getElementById('sh-etd').value;
+  const eta = document.getElementById('sh-eta').value;
+  const arrived = document.getElementById('sh-arrived').value;
+  const idx = SH_STEPS.indexOf(status);
+  const dates = { 'Booking':'—', 'Sailed':etd||'—', 'Arrived Port':eta||'—', 'Customs Cleared':'—', 'Delivered':arrived||'—', 'Completed':arrived||'—' };
+  let html = '';
+  SH_STEPS.forEach((step,i)=>{
+    const done = i < idx;
+    const active = i === idx;
+    const dotClass = done?'tl-dot-done':active?'tl-dot-active':'tl-dot-pending';
+    html += `<div class="tl-step">
+      <div class="tl-dot ${dotClass}">${done?'✓':i+1}</div>
+      <div class="tl-label">${step}</div>
+      <div class="tl-date">${dates[step]||''}</div>
+    </div>`;
+    if(i < SH_STEPS.length-1) html += `<div class="tl-line ${done?'tl-line-done':''}"></div>`;
+  });
+  document.getElementById('sh-timeline').innerHTML = html;
+  document.getElementById('sh-badge').textContent = status;
+}
+
+async function saveShipping(){
+  const pono = document.getElementById('sh-po-select').value;
+  if(!pono) return;
+  const trucks = parseInt(document.getElementById('sh-trucks').value)||0;
+  const fields = {
+    Title: `BL-${pono}`,
+    PONo: pono,
+    BLNo: document.getElementById('sh-blno').value||null,
+    BLDate: document.getElementById('sh-bldate').value ? new Date(document.getElementById('sh-bldate').value).toISOString() : null,
+    VesselName: document.getElementById('sh-vessel').value||null,
+    ETD: document.getElementById('sh-etd').value ? new Date(document.getElementById('sh-etd').value).toISOString() : null,
+    ETA: document.getElementById('sh-eta').value ? new Date(document.getElementById('sh-eta').value).toISOString() : null,
+    ActualArrival: document.getElementById('sh-arrived').value ? new Date(document.getElementById('sh-arrived').value).toISOString() : null,
+    BLWeightTon: parseFloat(document.getElementById('sh-weight').value)||null,
+    BLCoilQty: parseInt(document.getElementById('sh-coil').value)||null,
+    NumTrucks: trucks||null,
+    MTCCertNo: document.getElementById('sh-mtcno').value||null,
+    MTCReceived: document.getElementById('sh-mtc').value==='Yes',
+    ShipStatus: document.getElementById('sh-status').value,
+    CarbonGenerated: false,
+    Remark: document.getElementById('sh-remark').value||null
+  };
+  const errEl = document.getElementById('sh-save-err');
+  errEl.style.display='none';
+  try {
+    if(shItemId) await updateListItem(L3, shItemId, fields);
+    else await createListItem(L3, fields);
+    // update L1
+    const po = poData.find(p=>p.Title===pono);
+    const newStatus = fields.ShipStatus==='Completed'?'6.Complete':fields.ShipStatus==='Delivered'||fields.ShipStatus==='Arrived Port'?'5.Arrived':'4.Shipped';
+    if(po?.id) await updateListItem(L1, po.id, { field_21: true, field_22: fields.MTCReceived, field_12: newStatus }).catch(()=>{});
+    toast('บันทึก Shipping สำเร็จ ✓'+(trucks?` · รถ ${trucks} คัน → Carbon trigger`:''));
+    poData=[]; loadPOList();
+  } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
+}
+
+function printShipping(){ document.title='Ship-'+document.getElementById('sh-po-select').value; window.print(); }
+
+// ── TOAST ─────────────────────────────────────────────────────
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3000); }
+
+// ── INIT ──────────────────────────────────────────────────────
+initMsal().catch(e=>showLoginErr(e.message));
+</script>
+</body>
+</html>
