@@ -456,6 +456,30 @@ const L2 = 'mcoil-ose-L2_LC_FX';
 const L3 = 'mcoil-ose-L3_BL_Shipping';
 const SCOPES = ['Sites.ReadWrite.All','User.Read'];
 
+// ── L1 FIELD MAP (display name → Graph API internal name) ────
+// ได้จาก Console log: Supplier=field_2, GradeSpec=field_6, CoatingType=field_7, POStatus=field_12, Incoterms=field_16
+const F = {
+  PODate:          'field_1',
+  Supplier:        'field_2',
+  ContractNo:      'field_3',
+  SteelSize:       'SteelSize',          // custom column — ใช้ display name ตรงๆ
+  SteelThicknessSpec_AX: 'SteelThicknessSpec_AX',
+  GradeSpec:       'field_6',
+  CoatingType:     'field_7',
+  CoilQty:         'field_8',
+  TotalWeightTon:  'field_9',
+  PriceUSD:        'field_10',
+  TotalUSD:        'field_11',
+  POStatus:        'field_12',
+  AgreedDelivery:  'field_13',
+  Incoterms:       'field_16',
+  PaymentTerms:    'field_17',
+  Remark:          'field_19',
+  HasLC:           'field_20',
+  HasBL:           'field_21',
+  MTCReceived:     'field_22',
+};
+
 // ── DYNAMIC CHOICES CACHE ────────────────────────────────────
 let choicesCache = { SteelSize:[], SteelThicknessSpec_AX:[], GradeSpec:[], CoatingType:[], Supplier:[], POStatus:[], Incoterms:[] };
 
@@ -599,7 +623,7 @@ async function loadPOList(){
   tbody.innerHTML='';
   try {
     [poData, shipData] = await Promise.all([
-      getListItems(L1, 'Title,PODate,Supplier,SteelSize,CoilQty,TotalWeightTon,TotalUSD,POStatus,AgreedDelivery'),
+      getListItems(L1, `Title,${F.PODate},${F.Supplier},${F.SteelSize},${F.TotalWeightTon},${F.TotalUSD},${F.POStatus},${F.AgreedDelivery}`),
       getListItems(L3, 'Title,ActualArrival').catch(()=>[])
     ]);
     loading.style.display='none';
@@ -607,31 +631,29 @@ async function loadPOList(){
 
     let totalUSD=0, waitLC=0, inTransit=0;
     poData.forEach(p=>{
-      totalUSD += parseFloat(p.TotalUSD)||0;
-      const status = p.POStatus||'';
+      totalUSD += parseFloat(p[F.TotalUSD])||0;
+      const status = p[F.POStatus]||'';
       if(status==='2.Confirmed') waitLC++;
       if(status==='4.Shipped'||status==='5.Arrived') inTransit++;
-      const date = p.PODate ? p.PODate.substring(0,10) : '—';
+      const date = p[F.PODate] ? p[F.PODate].substring(0,10) : '—';
 
-      // Lead Time คำนวณใน app
       const ship = shipData.find(s=>s.Title===p.Title);
       let leadTime = '—';
-      if(p.PODate && ship?.ActualArrival){
-        const days = Math.round((new Date(ship.ActualArrival)-new Date(p.PODate))/(1000*60*60*24));
+      if(p[F.PODate] && ship?.ActualArrival){
+        const days = Math.round((new Date(ship.ActualArrival)-new Date(p[F.PODate]))/(1000*60*60*24));
         leadTime = days>0 ? `<span style="color:var(--success);font-weight:600;">${days} วัน</span>` : '—';
-      } else if(p.PODate && p.AgreedDelivery){
-        const days = Math.round((new Date(p.AgreedDelivery)-new Date(p.PODate))/(1000*60*60*24));
+      } else if(p[F.PODate] && p[F.AgreedDelivery]){
+        const days = Math.round((new Date(p[F.AgreedDelivery])-new Date(p[F.PODate]))/(1000*60*60*24));
         leadTime = days>0 ? `<span style="color:var(--text-hint);">~${days} วัน</span>` : '—';
       }
 
       tbody.innerHTML += `<tr>
         <td><strong>${p.Title||'—'}</strong></td>
         <td>${date}</td>
-        <td>${p.Supplier||'—'}</td>
-        <td>${p.SteelSize||'—'}</td>
-        <td style="text-align:center;">${p.CoilQty||'—'}</td>
-        <td style="text-align:right;">${p.TotalWeightTon ? Number(p.TotalWeightTon).toLocaleString()+' ต.' : '—'}</td>
-        <td style="text-align:right;">${p.TotalUSD ? Number(p.TotalUSD).toLocaleString(undefined,{maximumFractionDigits:0}) : '—'}</td>
+        <td>${p[F.Supplier]||'—'}</td>
+        <td>${p[F.SteelSize]||'—'}</td>
+        <td style="text-align:right;">${p[F.TotalWeightTon] ? Number(p[F.TotalWeightTon]).toLocaleString()+' ต.' : '—'}</td>
+        <td style="text-align:right;">${p[F.TotalUSD] ? Number(p[F.TotalUSD]).toLocaleString(undefined,{maximumFractionDigits:0}) : '—'}</td>
         <td style="text-align:center;">${leadTime}</td>
         <td>${statusBadge(status)}</td>
         <td>
@@ -654,12 +676,12 @@ function openLCForPO(pono){ document.getElementById('lc-po-select').value=pono; 
 function openShipForPO(pono){ document.getElementById('sh-po-select').value=pono; switchTab(3); loadShipRecord(); }
 
 async function populatePOSelects(){
-  if(!poData.length) poData = await getListItems(L1,'Title,Supplier,TotalUSD,POStatus').catch(()=>[]);
+  if(!poData.length) poData = await getListItems(L1,`Title,${F.Supplier},${F.TotalUSD},${F.POStatus}`).catch(()=>[]);
   ['lc-po-select','sh-po-select'].forEach(id=>{
     const sel = document.getElementById(id);
     const cur = sel.value;
     sel.innerHTML = '<option value="">-- เลือก PO --</option>';
-    poData.forEach(p=>{ sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${p.Supplier||''}</option>`; });
+    poData.forEach(p=>{ sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${p[F.Supplier]||''}</option>`; });
     if(cur) sel.value = cur;
   });
 }
@@ -777,21 +799,21 @@ async function savePO(){
   const toISO = v => v ? new Date(v).toISOString() : null;
 
   const l1Fields = {
-    Title:           pono,
-    PODate:          toISO(podate),
-    Supplier:        supplier,
-    ContractNo:      document.getElementById('f-contract').value||null,
-    TotalWeightTon:  parseFloat(totalWeight.toFixed(3)),
-    TotalUSD:        parseFloat(totalUSD.toFixed(2)),
-    AgreedDelivery:  toISO(document.getElementById('f-delivery').value),
-    Incoterms:       document.getElementById('f-incoterms').value||null,
-    PaymentTerms:    document.getElementById('f-payterms').value||null,
-    Remark:          document.getElementById('f-remark').value||null,
-    POStatus:        '1.Draft',
-    HasLC: false, HasBL: false, MTCReceived: false
+    Title:         pono,
+    [F.PODate]:    toISO(podate),
+    [F.Supplier]:  supplier,
+    [F.ContractNo]:   document.getElementById('f-contract').value||null,
+    [F.TotalWeightTon]: parseFloat(totalWeight.toFixed(3)),
+    [F.TotalUSD]:  parseFloat(totalUSD.toFixed(2)),
+    [F.AgreedDelivery]: toISO(document.getElementById('f-delivery').value),
+    [F.Incoterms]: document.getElementById('f-incoterms').value||null,
+    [F.PaymentTerms]: document.getElementById('f-payterms').value||null,
+    [F.Remark]:    document.getElementById('f-remark').value||null,
+    [F.POStatus]:  '1.Draft',
+    [F.HasLC]: false, [F.HasBL]: false, [F.MTCReceived]: false
   };
   const uniqueSizes = [...new Set(lineItems.map(li=>li.steelSize).filter(Boolean))];
-  if(uniqueSizes.length===1) l1Fields.SteelSize = uniqueSizes[0];
+  if(uniqueSizes.length===1) l1Fields[F.SteelSize] = uniqueSizes[0];
   Object.keys(l1Fields).forEach(k=>{ if(l1Fields[k]===null||l1Fields[k]==='') delete l1Fields[k]; });
 
   const icon = document.getElementById('save-icon');
@@ -837,7 +859,7 @@ async function loadLCRecord(){
   form.style.display='block';
   document.getElementById('lc-po-title').textContent = `LC/FX — ${pono}`;
   const po = poData.find(p=>p.Title===document.getElementById('lc-po-select').value);
-  document.getElementById('lc-po-badge').textContent = po?.POStatus||'';
+  document.getElementById('lc-po-badge').textContent = po?.[F.POStatus]||'';
   document.getElementById('lc-po-badge').className = 'badge badge-blue';
 
   // load existing LC record
@@ -862,7 +884,7 @@ async function loadLCRecord(){
 
 function calcLCRemain(){
   const amt = parseFloat(document.getElementById('lc-amount').value)||0;
-  const poUSD = poData.find(p=>p.Title===document.getElementById('lc-po-select').value)?.TotalUSD||0;
+  const poUSD = poData.find(p=>p.Title===document.getElementById('lc-po-select').value)?.[F.TotalUSD]||0;
   if(!amt){ document.getElementById('lc-used-text').textContent='—'; return; }
   const pct = Math.min(100, Math.round((poUSD/amt)*100));
   document.getElementById('lc-bar').style.width = pct+'%';
@@ -873,7 +895,7 @@ function calcLCRemain(){
 function calcTHB(){
   const rate = parseFloat(document.getElementById('fx-rate').value)||0;
   const pono = document.getElementById('lc-po-select').value;
-  const usd = poData.find(p=>p.Title===pono)?.TotalUSD||0;
+  const usd = poData.find(p=>p.Title===pono)?.[F.TotalUSD]||0;
   if(rate && usd) document.getElementById('fx-thb').value = Number(usd*rate).toLocaleString(undefined,{maximumFractionDigits:0});
   else document.getElementById('fx-thb').value='';
 }
@@ -903,7 +925,7 @@ async function saveLC(){
     else await createListItem(L2, fields);
     // update L1 HasLC
     const po = poData.find(p=>p.Title===pono);
-    if(po?.id) await updateListItem(L1, po.id, { HasLC: true, POStatus: '3.LC Opened' }).catch(()=>{});
+    if(po?.id) await updateListItem(L1, po.id, { [F.HasLC]: true, [F.POStatus]: '3.LC Opened' }).catch(()=>{});
     toast('บันทึก LC/FX สำเร็จ ✓');
     poData=[]; loadPOList();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
@@ -997,7 +1019,7 @@ async function saveShipping(){
     // update L1
     const po = poData.find(p=>p.Title===pono);
     const newStatus = fields.ShipStatus==='Completed'?'6.Complete':fields.ShipStatus==='Delivered'||fields.ShipStatus==='Arrived Port'?'5.Arrived':'4.Shipped';
-    if(po?.id) await updateListItem(L1, po.id, { HasBL: true, MTCReceived: fields.MTCReceived, POStatus: newStatus }).catch(()=>{});
+    if(po?.id) await updateListItem(L1, po.id, { [F.HasBL]: true, [F.MTCReceived]: fields.MTCReceived, [F.POStatus]: newStatus }).catch(()=>{});
     toast('บันทึก Shipping สำเร็จ ✓'+(trucks?` · รถ ${trucks} คัน → Carbon trigger`:''));
     poData=[]; loadPOList();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
