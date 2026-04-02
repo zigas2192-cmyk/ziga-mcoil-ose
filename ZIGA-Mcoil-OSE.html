@@ -583,7 +583,12 @@ async function graphGet(url){
 async function graphPost(url, body){
   const token = await getToken();
   const r = await fetch(url, { method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
-  if(!r.ok) throw new Error((await r.json()).error?.message || r.statusText);
+  if(!r.ok){
+    const errJson = await r.json();
+    const msg = errJson?.error?.message || errJson?.['odata.error']?.message?.value || r.statusText;
+    console.error('GraphPost error:', msg, '\nBody sent:', JSON.stringify(body));
+    throw new Error(msg);
+  }
   return r.json();
 }
 async function graphPatch(url, body){
@@ -595,7 +600,7 @@ async function graphPatch(url, body){
 
 async function getListItems(listName, select='*', filter=''){
   let url = `${SITE_PATH}/lists/${listName}/items?expand=fields(select=${select})`;
-  if(filter) url += `&$filter=${filter}`;
+  if(filter) url += `&$filter=${encodeURIComponent(filter)}`;
   const data = await graphGet(url);
   return data.value.map(i=>({id:i.id,...i.fields}));
 }
