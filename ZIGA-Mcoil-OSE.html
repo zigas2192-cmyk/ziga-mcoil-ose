@@ -789,7 +789,7 @@ function clearForm(){
   // reset edit mode
   editingPOId = null;
   const saveBtn = document.querySelector('.form-actions .btn-primary');
-  if(saveBtn) saveBtn.textContent = ' บันทึก PO';
+  if(saveBtn) saveBtn.innerHTML = '<span id="save-icon"></span> บันทึก PO';
   lineItems=[]; liCounter=0;
   document.getElementById('li-tbody').innerHTML='';
   calcGrandTotal();
@@ -933,7 +933,8 @@ async function editPO(pono){
     }
 
     // เปลี่ยนปุ่มเป็น "อัปเดต PO"
-    document.querySelector('.form-actions .btn-primary').textContent = '💾 อัปเดต PO';
+    const saveBtn = document.querySelector('.form-actions .btn-primary');
+    if(saveBtn) saveBtn.innerHTML = '<span id="save-icon"></span> 💾 อัปเดต PO';
     toast(`โหลด ${pono} สำเร็จ — แก้ไขแล้วกด "อัปเดต PO"`);
   } catch(e){
     toast('โหลดไม่ได้: '+e.message);
