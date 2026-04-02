@@ -104,6 +104,22 @@ tr:hover td{background:var(--gray-bg);}
 .field textarea{resize:vertical;min-height:64px;}
 .form-actions{display:flex;gap:8px;margin-top:4px;}
 
+/* ── Line Items ── */
+.line-item-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px;}
+.line-item-table th{text-align:left;padding:7px 10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);background:var(--gray-bg);border-bottom:1px solid var(--border);}
+.line-item-table td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.line-item-table tr:last-child td{border-bottom:none;}
+.line-item-table input,.line-item-table select{width:100%;padding:5px 8px;border:1px solid var(--border-strong);border-radius:6px;font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);}
+.line-item-table input:focus,.line-item-table select:focus{outline:none;border-color:var(--accent);}
+.line-item-table input[readonly]{background:var(--gray-bg);color:var(--text-muted);}
+.li-total-row{background:var(--accent-bg);font-weight:600;}
+.li-total-row td{border-top:2px solid var(--accent);padding:8px 10px;}
+.btn-add-row{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;border:1.5px dashed var(--accent);background:var(--accent-bg);color:var(--accent);cursor:pointer;transition:all .12s;}
+.btn-add-row:hover{background:#e0eaff;}
+.btn-del-row{background:none;border:none;color:var(--text-hint);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1;}
+.btn-del-row:hover{background:var(--danger-bg);color:var(--danger);}
+
+
 /* ── Badge ── */
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
 .badge-blue{background:var(--accent-bg);color:var(--accent);}
@@ -223,11 +239,15 @@ tr:hover td{background:var(--gray-bg);}
           <table>
             <thead>
               <tr>
-                <th>PO No.</th><th>วันที่ PO</th><th>Supplier</th><th>สเปก</th>
-                <th>จำนวน (ลูก)</th><th>มูลค่า (USD)</th><th>สถานะ</th><th></th>
+                <th>PO No.</th><th>วันที่ PO</th><th>Supplier</th><th>SteelSize</th>
+                <th style="text-align:center;">Coil (ลูก)</th>
+                <th style="text-align:right;">น้ำหนัก (ต.)</th>
+                <th style="text-align:right;">มูลค่า (USD)</th>
+                <th style="text-align:center;">Lead Time</th>
+                <th>สถานะ</th><th></th>
               </tr>
             </thead>
-            <tbody id="po-tbody"><tr><td colspan="8" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+            <tbody id="po-tbody"><tr><td colspan="10" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -253,22 +273,38 @@ tr:hover td{background:var(--gray-bg);}
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><span class="card-title">ข้อมูลเหล็ก</span></div>
-        <div class="form-grid-3">
-          <div class="field"><label>ความหนา (มม.)</label><input id="f-thick" type="number" step="0.1" placeholder="เช่น 2.8"/></div>
-          <div class="field"><label>ความกว้าง (มม.)</label><input id="f-width" type="number" placeholder="เช่น 1250"/></div>
-          <div class="field"><label>Grade / Spec</label><select id="f-grade"><option value="">-- เลือก --</option><option>JIS G3302-CGI-มอก.50</option><option>JIS G3302-HGI-มอก.3243</option><option>JIS G3323-HGI-มอก.2981</option></select></div>
+        <div class="card-header" style="justify-content:space-between;">
+          <span class="card-title">รายการสินค้า (Line Items)</span>
+          <button class="btn-add-row" onclick="addLineItem()">＋ เพิ่มรายการ</button>
         </div>
-        <div class="form-grid-3">
-          <div class="field"><label>Coating Type</label>
-            <select id="f-coating"><option value="">-- เลือก --</option><option>Z060</option><option>Z080</option><option>Z100</option><option>Z120</option><option>Z275</option><option>Z450</option><option>Z500</option><option>Z600</option><option>K060</option><option>K080</option><option>K450</option></select>
-          </div>
-          <div class="field"><label>จำนวน Coil (ลูก)</label><input id="f-coilqty" type="number" oninput="calcTotal()"/></div>
-          <div class="field"><label>น้ำหนักรวม (ตัน)</label><input id="f-weight" type="number" step="0.1"/></div>
-        </div>
-        <div class="form-grid-2">
-          <div class="field"><label>ราคา/ตัน (USD)</label><input id="f-price" type="number" step="0.01" oninput="calcTotal()"/></div>
-          <div class="field"><label>มูลค่ารวม (USD) — คำนวณอัตโนมัติ</label><input id="f-total" readonly placeholder="กรอก Coil และราคา/ตัน ก่อน"/></div>
+        <div class="tbl-wrap">
+          <table class="line-item-table">
+            <thead>
+              <tr>
+                <th style="width:32px;">#</th>
+                <th style="min-width:130px;">SteelSize*</th>
+                <th style="min-width:130px;">Thickness Spec (AX)</th>
+                <th style="min-width:170px;">Grade / Spec*</th>
+                <th style="min-width:110px;">Coating Type</th>
+                <th style="min-width:80px;">Coil (ลูก)*</th>
+                <th style="min-width:100px;">น้ำหนัก (ตัน)*</th>
+                <th style="min-width:100px;">ราคา/ตัน (USD)*</th>
+                <th style="min-width:110px;">มูลค่า (USD)</th>
+                <th style="width:36px;"></th>
+              </tr>
+            </thead>
+            <tbody id="li-tbody"></tbody>
+            <tfoot>
+              <tr class="li-total-row">
+                <td colspan="5" style="text-align:right;color:var(--text-muted);font-size:12px;">รวมทั้งหมด</td>
+                <td id="li-total-coil">—</td>
+                <td id="li-total-weight">—</td>
+                <td></td>
+                <td id="li-total-usd" style="color:var(--accent);">—</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
       <div class="card">
@@ -417,9 +453,29 @@ const TENANT_ID  = '2c7e3ab4-6d2f-491e-87cc-8be0a96f1a68';
 const SITE_ID    = 'zigainnovation.sharepoint.com,/sites/msteams_1fdd76';
 const SITE_PATH  = 'https://graph.microsoft.com/v1.0/sites/zigainnovation.sharepoint.com:/sites/msteams_1fdd76:';
 const L1 = 'mcoil-ose-L1_PurchaseOrder';
+const L1b = 'mcoil-ose-L1B_PurchaseOrderLine';
 const L2 = 'mcoil-ose-L2_LC_FX';
 const L3 = 'mcoil-ose-L3_BL_Shipping';
 const SCOPES = ['Sites.ReadWrite.All','User.Read'];
+
+// ── DYNAMIC CHOICES CACHE ────────────────────────────────────
+let choicesCache = { SteelSize:[], SteelThicknessSpec_AX:[], GradeSpec:[], CoatingType:[], Supplier:[], POStatus:[], Incoterms:[] };
+
+async function loadChoices(){
+  // ดึง column definitions จาก L1 เพื่อ get choices
+  try {
+    const cols = await graphGet(`${SITE_PATH}/lists/${L1}/columns`);
+    cols.value.forEach(col=>{
+      if(col.choice && choicesCache.hasOwnProperty(col.name)){
+        choicesCache[col.name] = col.choice.choices || [];
+      }
+    });
+  } catch(e){ console.warn('loadChoices failed:', e.message); }
+}
+
+function makeOpts(arr, sel='', placeholder='-- เลือก --'){
+  return `<option value="">${placeholder}</option>`+arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v}</option>`).join('');
+}
 
 // ── MSAL ────────────────────────────────────────────────────
 const msalConfig = {
@@ -459,8 +515,15 @@ function showApp(){
   document.getElementById('user-name').textContent = name;
   const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('user-initials').textContent = initials;
+  await loadChoices();
   loadPOList();
   populatePOSelects();
+  // populate static selects from choices
+  const supSel = document.getElementById('f-supplier');
+  if(supSel && choicesCache.Supplier.length){
+    supSel.innerHTML = makeOpts(choicesCache.Supplier);
+  }
+  addLineItem(); // init 1 empty row for new PO form
 }
 
 // ── TOKEN ────────────────────────────────────────────────────
@@ -519,6 +582,7 @@ function statusBadge(s){
 
 // ── S0: PO LIST ───────────────────────────────────────────────
 let poData = [];
+let shipData = [];
 async function loadPOList(){
   const tbody = document.getElementById('po-tbody');
   const err = document.getElementById('po-error');
@@ -526,25 +590,42 @@ async function loadPOList(){
   err.style.display='none'; loading.style.display='block';
   tbody.innerHTML='';
   try {
-    poData = await getListItems(L1, 'Title,field_1,field_2,field_4,field_5,field_8,field_11,field_12');
+    [poData, shipData] = await Promise.all([
+      getListItems(L1, 'Title,PODate,Supplier,SteelSize,CoilQty,TotalWeightTon,TotalUSD,POStatus,AgreedDelivery'),
+      getListItems(L3, 'Title,ActualArrival').catch(()=>[])
+    ]);
     loading.style.display='none';
-    if(!poData.length){ tbody.innerHTML='<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div>ยังไม่มีข้อมูล PO</div></td></tr>'; return; }
+    if(!poData.length){ tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="empty-icon">📋</div>ยังไม่มีข้อมูล PO</div></td></tr>'; return; }
 
     let totalUSD=0, waitLC=0, inTransit=0;
     poData.forEach(p=>{
-      totalUSD += parseFloat(p.field_11)||0;
-      if(p.field_12==='2.Confirmed') waitLC++;
-      if(p.field_12==='4.Shipped'||p.field_12==='5.Arrived') inTransit++;
-      const date = p.field_1 ? p.field_1.substring(0,10) : '—';
-      const spec = [p.field_4?`${p.field_4}mm`:'', p.field_5?`${p.field_5}mm`:''].filter(Boolean).join(' × ') || '—';
+      totalUSD += parseFloat(p.TotalUSD)||0;
+      const status = p.POStatus||'';
+      if(status==='2.Confirmed') waitLC++;
+      if(status==='4.Shipped'||status==='5.Arrived') inTransit++;
+      const date = p.PODate ? p.PODate.substring(0,10) : '—';
+
+      // Lead Time คำนวณใน app
+      const ship = shipData.find(s=>s.Title===p.Title);
+      let leadTime = '—';
+      if(p.PODate && ship?.ActualArrival){
+        const days = Math.round((new Date(ship.ActualArrival)-new Date(p.PODate))/(1000*60*60*24));
+        leadTime = days>0 ? `<span style="color:var(--success);font-weight:600;">${days} วัน</span>` : '—';
+      } else if(p.PODate && p.AgreedDelivery){
+        const days = Math.round((new Date(p.AgreedDelivery)-new Date(p.PODate))/(1000*60*60*24));
+        leadTime = days>0 ? `<span style="color:var(--text-hint);">~${days} วัน</span>` : '—';
+      }
+
       tbody.innerHTML += `<tr>
         <td><strong>${p.Title||'—'}</strong></td>
         <td>${date}</td>
-        <td>${p.field_2||'—'}</td>
-        <td>${spec}</td>
-        <td>${p.field_8||'—'}</td>
-        <td>${p.field_11 ? Number(p.field_11).toLocaleString() : '—'}</td>
-        <td>${statusBadge(p.field_12)}</td>
+        <td>${p.Supplier||'—'}</td>
+        <td>${p.SteelSize||'—'}</td>
+        <td style="text-align:center;">${p.CoilQty||'—'}</td>
+        <td style="text-align:right;">${p.TotalWeightTon ? Number(p.TotalWeightTon).toLocaleString()+' ต.' : '—'}</td>
+        <td style="text-align:right;">${p.TotalUSD ? Number(p.TotalUSD).toLocaleString(undefined,{maximumFractionDigits:0}) : '—'}</td>
+        <td style="text-align:center;">${leadTime}</td>
+        <td>${statusBadge(status)}</td>
         <td>
           <button class="btn btn-sm btn-ghost" onclick="openLCForPO('${p.Title}')">LC</button>
           <button class="btn btn-sm btn-ghost" onclick="openShipForPO('${p.Title}')">Ship</button>
@@ -565,68 +646,170 @@ function openLCForPO(pono){ document.getElementById('lc-po-select').value=pono; 
 function openShipForPO(pono){ document.getElementById('sh-po-select').value=pono; switchTab(3); loadShipRecord(); }
 
 async function populatePOSelects(){
-  if(!poData.length) poData = await getListItems(L1,'Title,field_2,field_11,field_12').catch(()=>[]);
+  if(!poData.length) poData = await getListItems(L1,'Title,Supplier,TotalUSD,POStatus').catch(()=>[]);
   ['lc-po-select','sh-po-select'].forEach(id=>{
     const sel = document.getElementById(id);
     const cur = sel.value;
     sel.innerHTML = '<option value="">-- เลือก PO --</option>';
-    poData.forEach(p=>{ sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${p.field_2||''}</option>`; });
+    poData.forEach(p=>{ sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${p.Supplier||''}</option>`; });
     if(cur) sel.value = cur;
   });
 }
 
-// ── S1: NEW PO FORM ───────────────────────────────────────────
-function calcTotal(){
-  const qty = parseFloat(document.getElementById('f-coilqty').value)||0;
-  const price = parseFloat(document.getElementById('f-price').value)||0;
-  const weight = parseFloat(document.getElementById('f-weight').value)||0;
-  const total = weight>0 ? (weight * price).toFixed(2) : (qty * price).toFixed(2);
-  document.getElementById('f-total').value = parseFloat(total)>0 ? Number(total).toLocaleString() : '';
+// ── S1: NEW PO FORM — MULTI LINE ITEMS ───────────────────────
+let lineItems = [];
+let liCounter = 0;
+
+function addLineItem(data={}){
+  const id = ++liCounter;
+  lineItems.push({id,steelSize:null,steelThick:null,grade:null,coating:null,coilQty:null,weight:null,price:null,total:null});
+  const tbody = document.getElementById('li-tbody');
+  const tr = document.createElement('tr');
+  tr.id = `li-row-${id}`;
+  // ใช้ choices จาก cache (dynamic จาก SharePoint)
+  const sizeOpts  = makeOpts(choicesCache.SteelSize, data.steelSize||'');
+  const thickOpts = makeOpts(choicesCache.SteelThicknessSpec_AX, data.steelThick||'');
+  const gradeOpts = makeOpts(choicesCache.GradeSpec, data.grade||'');
+  const coatOpts  = makeOpts(choicesCache.CoatingType, data.coating||'');
+  tr.innerHTML = `
+    <td style="text-align:center;color:var(--text-hint);font-size:12px;min-width:28px;" id="li-num-${id}"></td>
+    <td><select id="li-size-${id}" onchange="calcLineTotal(${id})">${sizeOpts}</select></td>
+    <td><select id="li-thick-${id}" onchange="calcLineTotal(${id})">${thickOpts}</select></td>
+    <td><select id="li-grade-${id}" onchange="calcLineTotal(${id})">${gradeOpts}</select></td>
+    <td><select id="li-coating-${id}" onchange="calcLineTotal(${id})">${coatOpts}</select></td>
+    <td><input type="number" min="0" id="li-coilqty-${id}" value="${data.coilQty||''}" placeholder="0" oninput="calcLineTotal(${id})"/></td>
+    <td><input type="number" step="0.001" min="0" id="li-weight-${id}" value="${data.weight||''}" placeholder="0.000" oninput="calcLineTotal(${id})"/></td>
+    <td><input type="number" step="0.01" min="0" id="li-price-${id}" value="${data.price||''}" placeholder="0.00" oninput="calcLineTotal(${id})"/></td>
+    <td><input readonly id="li-linetotal-${id}" placeholder="—" style="font-weight:600;"/></td>
+    <td><button class="btn-del-row" onclick="removeLineItem(${id})" title="ลบ">×</button></td>
+  `;
+  tbody.appendChild(tr);
+  renumberRows();
+}
+
+function removeLineItem(id){
+  if(lineItems.length<=1){ toast('ต้องมีอย่างน้อย 1 รายการ'); return; }
+  lineItems = lineItems.filter(li=>li.id!==id);
+  document.getElementById(`li-row-${id}`)?.remove();
+  renumberRows();
+  calcGrandTotal();
+}
+
+function renumberRows(){
+  document.querySelectorAll('#li-tbody tr').forEach((tr,i)=>{
+    const numEl = tr.querySelector('[id^="li-num-"]');
+    if(numEl) numEl.textContent = i+1;
+  });
+}
+
+function calcLineTotal(id){
+  const weight = parseFloat(document.getElementById(`li-weight-${id}`)?.value)||0;
+  const price  = parseFloat(document.getElementById(`li-price-${id}`)?.value)||0;
+  const lineTotal = (weight>0 && price>0) ? weight*price : 0;
+  const totalEl = document.getElementById(`li-linetotal-${id}`);
+  if(totalEl) totalEl.value = lineTotal>0 ? lineTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
+  const li = lineItems.find(l=>l.id===id);
+  if(li){
+    li.steelSize  = document.getElementById(`li-size-${id}`)?.value||null;
+    li.steelThick = document.getElementById(`li-thick-${id}`)?.value||null;
+    li.grade      = document.getElementById(`li-grade-${id}`)?.value||null;
+    li.coating    = document.getElementById(`li-coating-${id}`)?.value||null;
+    li.coilQty    = parseInt(document.getElementById(`li-coilqty-${id}`)?.value)||null;
+    li.weight     = weight||null;
+    li.price      = price||null;
+    li.total      = lineTotal||null;
+  }
+  calcGrandTotal();
+}
+
+function calcGrandTotal(){
+  let totalCoil=0, totalWeight=0, totalUSD=0;
+  lineItems.forEach(li=>{
+    totalCoil   += li.coilQty||0;
+    totalWeight += li.weight||0;
+    totalUSD    += li.total||0;
+  });
+  document.getElementById('li-total-coil').textContent   = totalCoil   ? totalCoil+' ลูก' : '—';
+  document.getElementById('li-total-weight').textContent = totalWeight  ? totalWeight.toFixed(3)+' ต.' : '—';
+  document.getElementById('li-total-usd').textContent    = totalUSD     ? totalUSD.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
 }
 
 function clearForm(){
-  ['f-pono','f-podate','f-contract','f-payterms','f-thick','f-width','f-grade','f-weight','f-coilqty','f-price','f-total','f-portload','f-portdest','f-delivery','f-remark']
-    .forEach(id=>{ document.getElementById(id).value=''; });
+  ['f-pono','f-podate','f-contract','f-payterms','f-portload','f-portdest','f-delivery','f-remark']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f-supplier').value='';
-  document.getElementById('f-coating').value='';
+  document.getElementById('f-incoterms').value='CFR';
   document.getElementById('save-err').style.display='none';
+  lineItems=[]; liCounter=0;
+  document.getElementById('li-tbody').innerHTML='';
+  calcGrandTotal();
+  addLineItem(); // start with 1 empty row
 }
 
 async function savePO(){
-  const pono = document.getElementById('f-pono').value.trim();
+  const pono     = document.getElementById('f-pono').value.trim();
   const supplier = document.getElementById('f-supplier').value;
-  const podate = document.getElementById('f-podate').value;
-  const errEl = document.getElementById('save-err');
+  const podate   = document.getElementById('f-podate').value;
+  const errEl    = document.getElementById('save-err');
   errEl.style.display='none';
-  if(!pono||!supplier||!podate){ errEl.textContent='กรุณากรอก PO No., Supplier และวันที่ PO'; errEl.style.display='block'; return; }
 
-  const totalRaw = document.getElementById('f-total').value.replace(/,/g,'');
+  if(!pono||!supplier||!podate){
+    errEl.textContent='กรุณากรอก PO No., Supplier และวันที่ PO'; errEl.style.display='block'; return;
+  }
+  if(!lineItems.length){
+    errEl.textContent='กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ'; errEl.style.display='block'; return;
+  }
+  for(const li of lineItems){
+    if(!li.steelSize||!li.grade||!li.coilQty||!li.weight||!li.price){
+      errEl.textContent='กรุณากรอกข้อมูลให้ครบทุก Line Item (SteelSize, Grade, Coil, น้ำหนัก, ราคา/ตัน)';
+      errEl.style.display='block'; return;
+    }
+  }
+
+  const totalCoil   = lineItems.reduce((s,li)=>s+(li.coilQty||0),0);
+  const totalWeight = lineItems.reduce((s,li)=>s+(li.weight||0),0);
+  const totalUSD    = lineItems.reduce((s,li)=>s+(li.total||0),0);
   const toISO = v => v ? new Date(v).toISOString() : null;
-  const fields = {
-    Title: pono,
-    field_1: toISO(podate),
-    field_3: document.getElementById('f-contract').value||null,
-    field_4: parseFloat(document.getElementById('f-thick').value)||null,
-    field_5: parseFloat(document.getElementById('f-width').value)||null,
-    field_8: parseInt(document.getElementById('f-coilqty').value)||null,
-    field_9: parseFloat(document.getElementById('f-weight').value)||null,
-    field_10: parseFloat(document.getElementById('f-price').value)||null,
-    field_11: parseFloat(totalRaw)||null,
-    field_14: document.getElementById('f-portload').value||null,
-    field_15: document.getElementById('f-portdest').value||null,
-    field_13: toISO(document.getElementById('f-delivery').value),
-    field_17: document.getElementById('f-payterms').value||null,
-    field_19: document.getElementById('f-remark').value||null,
-    field_20: false, field_21: false, field_22: false
+
+  const l1Fields = {
+    Title:           pono,
+    PODate:          toISO(podate),
+    Supplier:        supplier,
+    ContractNo:      document.getElementById('f-contract').value||null,
+    CoilQty:         totalCoil,
+    TotalWeightTon:  parseFloat(totalWeight.toFixed(3)),
+    TotalUSD:        parseFloat(totalUSD.toFixed(2)),
+    AgreedDelivery:  toISO(document.getElementById('f-delivery').value),
+    Incoterms:       document.getElementById('f-incoterms').value||null,
+    PaymentTerms:    document.getElementById('f-payterms').value||null,
+    Remark:          document.getElementById('f-remark').value||null,
+    POStatus:        '1.Draft',
+    HasLC: false, HasBL: false, MTCReceived: false
   };
-  Object.keys(fields).forEach(k => { if(fields[k]===null||fields[k]==='') delete fields[k]; });
+  // เพิ่ม SteelSize สรุปจาก line items (unique)
+  const uniqueSizes = [...new Set(lineItems.map(li=>li.steelSize).filter(Boolean))];
+  if(uniqueSizes.length===1) l1Fields.SteelSize = uniqueSizes[0];
+  Object.keys(l1Fields).forEach(k=>{ if(l1Fields[k]===null||l1Fields[k]==='') delete l1Fields[k]; });
 
   const icon = document.getElementById('save-icon');
   icon.innerHTML = '<span class="spinner"></span>';
   try {
-    await createListItem(L1, fields);
+    await createListItem(L1, l1Fields);
+    await Promise.all(lineItems.map((li,idx)=>createListItem(L1b,{
+      Title:               `${pono}-${String(idx+1).padStart(2,'0')}`,
+      PONo:                pono,
+      SteelSize:           li.steelSize,
+      SteelThicknessSpec_AX: li.steelThick||null,
+      GradeSpec:           li.grade,
+      CoatingType:         li.coating||null,
+      CoilQty:             li.coilQty,
+      TotalWeightTon:      li.weight,
+      PriceUSD:            li.price,
+      TotalUSD:            li.total
+    })));
+
     icon.innerHTML='';
-    toast('บันทึก PO สำเร็จ ✓');
+    toast(`บันทึก PO สำเร็จ ✓  ${lineItems.length} รายการ / ${totalCoil} ลูก / $${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})}`);
     clearForm();
     poData=[];
     switchTab(0);
@@ -651,8 +834,8 @@ async function loadLCRecord(){
   if(!pono){ form.style.display='none'; return; }
   form.style.display='block';
   document.getElementById('lc-po-title').textContent = `LC/FX — ${pono}`;
-  const po = poData.find(p=>p.Title===pono);
-  document.getElementById('lc-po-badge').textContent = po?.field_12||'';
+  const po = poData.find(p=>p.Title===document.getElementById('lc-po-select').value);
+  document.getElementById('lc-po-badge').textContent = po?.POStatus||'';
   document.getElementById('lc-po-badge').className = 'badge badge-blue';
 
   // load existing LC record
@@ -718,7 +901,7 @@ async function saveLC(){
     else await createListItem(L2, fields);
     // update L1 HasLC
     const po = poData.find(p=>p.Title===pono);
-    if(po?.id) await updateListItem(L1, po.id, { field_20: true, field_12: '3.LC Opened' }).catch(()=>{});
+    if(po?.id) await updateListItem(L1, po.id, { HasLC: true, POStatus: '3.LC Opened' }).catch(()=>{});
     toast('บันทึก LC/FX สำเร็จ ✓');
     poData=[]; loadPOList();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
@@ -812,7 +995,7 @@ async function saveShipping(){
     // update L1
     const po = poData.find(p=>p.Title===pono);
     const newStatus = fields.ShipStatus==='Completed'?'6.Complete':fields.ShipStatus==='Delivered'||fields.ShipStatus==='Arrived Port'?'5.Arrived':'4.Shipped';
-    if(po?.id) await updateListItem(L1, po.id, { field_21: true, field_22: fields.MTCReceived, field_12: newStatus }).catch(()=>{});
+    if(po?.id) await updateListItem(L1, po.id, { HasBL: true, MTCReceived: fields.MTCReceived, POStatus: newStatus }).catch(()=>{});
     toast('บันทึก Shipping สำเร็จ ✓'+(trucks?` · รถ ${trucks} คัน → Carbon trigger`:''));
     poData=[]; loadPOList();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
