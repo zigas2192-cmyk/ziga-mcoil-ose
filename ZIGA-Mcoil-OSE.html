@@ -240,14 +240,13 @@ tr:hover td{background:var(--gray-bg);}
             <thead>
               <tr>
                 <th>PO No.</th><th>วันที่ PO</th><th>Supplier</th><th>SteelSize</th>
-                <th style="text-align:center;">Coil (ลูก)</th>
                 <th style="text-align:right;">น้ำหนัก (ต.)</th>
                 <th style="text-align:right;">มูลค่า (USD)</th>
                 <th style="text-align:center;">Lead Time</th>
                 <th>สถานะ</th><th></th>
               </tr>
             </thead>
-            <tbody id="po-tbody"><tr><td colspan="10" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+            <tbody id="po-tbody"><tr><td colspan="9" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -670,7 +669,8 @@ async function loadPOList(){
         <td style="text-align:right;">${p[F.TotalUSD] ? Number(p[F.TotalUSD]).toLocaleString(undefined,{maximumFractionDigits:0}) : '—'}</td>
         <td style="text-align:center;">${leadTime}</td>
         <td>${statusBadge(status)}</td>
-        <td>
+        <td style="white-space:nowrap;">
+          <button class="btn btn-sm btn-ghost" onclick="editPO('${p.Title}')">✏️</button>
           <button class="btn btn-sm btn-ghost" onclick="openLCForPO('${p.Title}')">LC</button>
           <button class="btn btn-sm btn-ghost" onclick="openShipForPO('${p.Title}')">Ship</button>
           <button class="btn btn-sm btn-ghost" onclick="printPOById('${p.Title}')">PDF</button>
@@ -782,9 +782,14 @@ function calcGrandTotal(){
 function clearForm(){
   ['f-pono','f-podate','f-contract','f-payterms','f-portload','f-portdest','f-delivery','f-remark']
     .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('f-pono').readOnly = false;
   document.getElementById('f-supplier').value='';
   document.getElementById('f-incoterms').value = choicesCache.Incoterms[0]||'';
   document.getElementById('save-err').style.display='none';
+  // reset edit mode
+  editingPOId = null;
+  const saveBtn = document.querySelector('.form-actions .btn-primary');
+  if(saveBtn) saveBtn.textContent = ' บันทึก PO';
   lineItems=[]; liCounter=0;
   document.getElementById('li-tbody').innerHTML='';
   calcGrandTotal();
@@ -830,32 +835,43 @@ async function savePO(){
   };
   const uniqueSizes = [...new Set(lineItems.map(li=>li.steelSize).filter(Boolean))];
   if(uniqueSizes.length===1) l1Fields[F.SteelSize] = uniqueSizes[0];
-  // ลบ field ที่ว่างออก
   Object.keys(l1Fields).forEach(k=>{ if(l1Fields[k]===null||l1Fields[k]===''||l1Fields[k]===undefined) delete l1Fields[k]; });
   console.log('savePO L1 fields:', JSON.stringify(l1Fields));
+
+  // L1b line items
+  const l1bItems = lineItems.map((li,idx)=>({
+    Title:                 `${pono}-${String(idx+1).padStart(2,'0')}`,
+    SteelSize:             li.steelSize||null,
+    SteelThicknessSpec_AX: li.steelThick||null,
+    GradeSpec:             li.grade||null,
+    CoatingType:           li.coating||null,
+    TotalWeightTon:        li.weight,
+    PriceUSD:              li.price,
+    TotalUSD:              li.total
+  }));
 
   const icon = document.getElementById('save-icon');
   icon.innerHTML = '<span class="spinner"></span>';
   try {
-    await createListItem(L1, l1Fields);
-
-    // L1b line items — ใช้ display name ตรงๆ (custom columns)
-    const l1bItems = lineItems.map((li,idx)=>({
-      Title:                 `${pono}-${String(idx+1).padStart(2,'0')}`,
-      PONo:                  pono,
-      SteelSize:             li.steelSize||null,
-      SteelThicknessSpec_AX: li.steelThick||null,
-      GradeSpec:             li.grade||null,
-      CoatingType:           li.coating||null,
-      TotalWeightTon:        li.weight,
-      PriceUSD:              li.price,
-      TotalUSD:              li.total
-    }));
-    console.log('savePO L1b[0]:', JSON.stringify(l1bItems[0]));
-    await Promise.all(l1bItems.map(fields=>createListItem(L1b, fields)));
+    if(editingPOId){
+      // UPDATE existing PO
+      await updateListItem(L1, editingPOId, l1Fields);
+      // ลบ L1b เก่าแล้วสร้างใหม่
+      const oldLines = await getListItems(L1b, 'Title', `fields/Title startswith '${pono}-'`).catch(()=>[]);
+      // SP ไม่รองรับ DELETE ผ่าน Graph อย่างง่าย — update ทีละรายการแทน
+      await Promise.all(l1bItems.map((fields,idx)=>{
+        const old = oldLines[idx];
+        if(old) return updateListItem(L1b, old.id, fields);
+        else return createListItem(L1b, fields);
+      }));
+    } else {
+      // CREATE new PO
+      await createListItem(L1, l1Fields);
+      await Promise.all(l1bItems.map(fields=>createListItem(L1b, fields)));
+    }
 
     icon.innerHTML='';
-    toast(`บันทึก PO สำเร็จ ✓  ${lineItems.length} รายการ / ${totalWeight.toFixed(1)} ต. / $${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})}`);
+    toast(`${editingPOId?'อัปเดต':'บันทึก'} PO สำเร็จ ✓  ${lineItems.length} รายการ / ${totalWeight.toFixed(1)} ต. / $${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})}`);
     clearForm();
     poData=[];
     switchTab(0);
@@ -865,7 +881,64 @@ async function savePO(){
   }
 }
 
-function printPO(){
+// ── EDIT PO ──────────────────────────────────────────────────
+let editingPOId = null; // SharePoint item id ที่กำลัง edit (null = new)
+
+async function editPO(pono){
+  // โหลด L1 header
+  switchTab(1);
+  const errEl = document.getElementById('save-err');
+  errEl.style.display='none';
+  try {
+    const items = await getListItems(L1,
+      `Title,${F.PODate},${F.Supplier},${F.ContractNo},${F.TotalWeightTon},${F.TotalUSD},${F.AgreedDelivery},${F.Incoterms},${F.PaymentTerms},${F.Remark},${F.POStatus}`,
+      `fields/Title eq '${pono}'`
+    );
+    if(!items.length){ toast('ไม่พบ PO นี้'); return; }
+    const po = items[0];
+    editingPOId = po.id;
+
+    // fill header form
+    document.getElementById('f-pono').value = po.Title;
+    document.getElementById('f-pono').readOnly = true; // ไม่ให้เปลี่ยน PO No.
+    document.getElementById('f-podate').value = po[F.PODate]?.substring(0,10)||'';
+    document.getElementById('f-supplier').value = po[F.Supplier]||'';
+    document.getElementById('f-contract').value = po[F.ContractNo]||'';
+    document.getElementById('f-incoterms').value = po[F.Incoterms]||'';
+    document.getElementById('f-payterms').value = po[F.PaymentTerms]||'';
+    document.getElementById('f-delivery').value = po[F.AgreedDelivery]?.substring(0,10)||'';
+    document.getElementById('f-remark').value = po[F.Remark]||'';
+
+    // โหลด L1b line items
+    const prefix = pono+'-';
+    const liItems = await getListItems(L1b,
+      `Title,SteelSize,SteelThicknessSpec_AX,GradeSpec,CoatingType,${F.TotalWeightTon},${F.PriceUSD},${F.TotalUSD}`
+    );
+    const myLines = liItems.filter(li=>li.Title?.startsWith(prefix)).sort((a,b)=>a.Title.localeCompare(b.Title));
+
+    // reset และ populate line items
+    lineItems=[]; liCounter=0;
+    document.getElementById('li-tbody').innerHTML='';
+    if(myLines.length){
+      myLines.forEach(li=>addLineItem({
+        steelSize: li.SteelSize||'',
+        steelThick: li.SteelThicknessSpec_AX||'',
+        grade: li.GradeSpec||'',
+        coating: li.CoatingType||'',
+        weight: li.TotalWeightTon||'',
+        price: li.PriceUSD||''
+      }));
+    } else {
+      addLineItem();
+    }
+
+    // เปลี่ยนปุ่มเป็น "อัปเดต PO"
+    document.querySelector('.form-actions .btn-primary').textContent = '💾 อัปเดต PO';
+    toast(`โหลด ${pono} สำเร็จ — แก้ไขแล้วกด "อัปเดต PO"`);
+  } catch(e){
+    toast('โหลดไม่ได้: '+e.message);
+  }
+}
   const pono = document.getElementById('f-pono').value || 'PO';
   document.title = `PO-${pono}`;
   window.print();
