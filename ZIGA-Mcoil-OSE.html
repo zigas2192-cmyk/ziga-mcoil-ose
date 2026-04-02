@@ -286,7 +286,6 @@ tr:hover td{background:var(--gray-bg);}
                 <th style="min-width:130px;">Thickness Spec (AX)</th>
                 <th style="min-width:170px;">Grade / Spec*</th>
                 <th style="min-width:110px;">Coating Type</th>
-                <th style="min-width:80px;">Coil (ลูก)*</th>
                 <th style="min-width:100px;">น้ำหนัก (ตัน)*</th>
                 <th style="min-width:100px;">ราคา/ตัน (USD)*</th>
                 <th style="min-width:110px;">มูลค่า (USD)</th>
@@ -296,8 +295,7 @@ tr:hover td{background:var(--gray-bg);}
             <tbody id="li-tbody"></tbody>
             <tfoot>
               <tr class="li-total-row">
-                <td colspan="5" style="text-align:right;color:var(--text-muted);font-size:12px;">รวมทั้งหมด</td>
-                <td id="li-total-coil">—</td>
+                <td colspan="4" style="text-align:right;color:var(--text-muted);font-size:12px;">รวมทั้งหมด</td>
                 <td id="li-total-weight">—</td>
                 <td></td>
                 <td id="li-total-usd" style="color:var(--accent);">—</td>
@@ -462,14 +460,24 @@ const SCOPES = ['Sites.ReadWrite.All','User.Read'];
 let choicesCache = { SteelSize:[], SteelThicknessSpec_AX:[], GradeSpec:[], CoatingType:[], Supplier:[], POStatus:[], Incoterms:[] };
 
 async function loadChoices(){
-  // ดึง column definitions จาก L1 เพื่อ get choices
   try {
     const cols = await graphGet(`${SITE_PATH}/lists/${L1}/columns`);
+    // map ทั้ง name (internal) และ displayName เพื่อให้จับได้แน่นอน
     cols.value.forEach(col=>{
-      if(col.choice && choicesCache.hasOwnProperty(col.name)){
-        choicesCache[col.name] = col.choice.choices || [];
+      if(!col.choice) return;
+      const choices = col.choice.choices || [];
+      // ตรวจทั้ง internal name และ display name
+      const key = Object.keys(choicesCache).find(k =>
+        col.name === k || col.displayName === k ||
+        col.name?.toLowerCase() === k.toLowerCase() ||
+        col.displayName?.toLowerCase() === k.toLowerCase()
+      );
+      if(key && choices.length) {
+        choicesCache[key] = choices;
+        console.log(`✓ choices loaded: ${key} (${choices.length}) — internal: ${col.name}`);
       }
     });
+    console.log('choicesCache:', JSON.stringify(choicesCache));
   } catch(e){ console.warn('loadChoices failed:', e.message); }
 }
 
@@ -677,7 +685,6 @@ function addLineItem(data={}){
     <td><select id="li-thick-${id}" onchange="calcLineTotal(${id})">${thickOpts}</select></td>
     <td><select id="li-grade-${id}" onchange="calcLineTotal(${id})">${gradeOpts}</select></td>
     <td><select id="li-coating-${id}" onchange="calcLineTotal(${id})">${coatOpts}</select></td>
-    <td><input type="number" min="0" id="li-coilqty-${id}" value="${data.coilQty||''}" placeholder="0" oninput="calcLineTotal(${id})"/></td>
     <td><input type="number" step="0.001" min="0" id="li-weight-${id}" value="${data.weight||''}" placeholder="0.000" oninput="calcLineTotal(${id})"/></td>
     <td><input type="number" step="0.01" min="0" id="li-price-${id}" value="${data.price||''}" placeholder="0.00" oninput="calcLineTotal(${id})"/></td>
     <td><input readonly id="li-linetotal-${id}" placeholder="—" style="font-weight:600;"/></td>
@@ -714,7 +721,6 @@ function calcLineTotal(id){
     li.steelThick = document.getElementById(`li-thick-${id}`)?.value||null;
     li.grade      = document.getElementById(`li-grade-${id}`)?.value||null;
     li.coating    = document.getElementById(`li-coating-${id}`)?.value||null;
-    li.coilQty    = parseInt(document.getElementById(`li-coilqty-${id}`)?.value)||null;
     li.weight     = weight||null;
     li.price      = price||null;
     li.total      = lineTotal||null;
@@ -723,15 +729,15 @@ function calcLineTotal(id){
 }
 
 function calcGrandTotal(){
-  let totalCoil=0, totalWeight=0, totalUSD=0;
+  let totalWeight=0, totalUSD=0;
   lineItems.forEach(li=>{
-    totalCoil   += li.coilQty||0;
     totalWeight += li.weight||0;
     totalUSD    += li.total||0;
   });
-  document.getElementById('li-total-coil').textContent   = totalCoil   ? totalCoil+' ลูก' : '—';
-  document.getElementById('li-total-weight').textContent = totalWeight  ? totalWeight.toFixed(3)+' ต.' : '—';
-  document.getElementById('li-total-usd').textContent    = totalUSD     ? totalUSD.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+  const wEl = document.getElementById('li-total-weight');
+  const uEl = document.getElementById('li-total-usd');
+  if(wEl) wEl.textContent = totalWeight ? totalWeight.toFixed(3)+' ต.' : '—';
+  if(uEl) uEl.textContent = totalUSD    ? totalUSD.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
 }
 
 function clearForm(){
@@ -743,7 +749,7 @@ function clearForm(){
   lineItems=[]; liCounter=0;
   document.getElementById('li-tbody').innerHTML='';
   calcGrandTotal();
-  addLineItem(); // start with 1 empty row
+  addLineItem();
 }
 
 async function savePO(){
@@ -760,13 +766,12 @@ async function savePO(){
     errEl.textContent='กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ'; errEl.style.display='block'; return;
   }
   for(const li of lineItems){
-    if(!li.steelSize||!li.grade||!li.coilQty||!li.weight||!li.price){
-      errEl.textContent='กรุณากรอกข้อมูลให้ครบทุก Line Item (SteelSize, Grade, Coil, น้ำหนัก, ราคา/ตัน)';
+    if(!li.steelSize||!li.grade||!li.weight||!li.price){
+      errEl.textContent='กรุณากรอกข้อมูลให้ครบทุก Line Item (SteelSize, Grade, น้ำหนัก, ราคา/ตัน)';
       errEl.style.display='block'; return;
     }
   }
 
-  const totalCoil   = lineItems.reduce((s,li)=>s+(li.coilQty||0),0);
   const totalWeight = lineItems.reduce((s,li)=>s+(li.weight||0),0);
   const totalUSD    = lineItems.reduce((s,li)=>s+(li.total||0),0);
   const toISO = v => v ? new Date(v).toISOString() : null;
@@ -776,7 +781,6 @@ async function savePO(){
     PODate:          toISO(podate),
     Supplier:        supplier,
     ContractNo:      document.getElementById('f-contract').value||null,
-    CoilQty:         totalCoil,
     TotalWeightTon:  parseFloat(totalWeight.toFixed(3)),
     TotalUSD:        parseFloat(totalUSD.toFixed(2)),
     AgreedDelivery:  toISO(document.getElementById('f-delivery').value),
@@ -786,7 +790,6 @@ async function savePO(){
     POStatus:        '1.Draft',
     HasLC: false, HasBL: false, MTCReceived: false
   };
-  // เพิ่ม SteelSize สรุปจาก line items (unique)
   const uniqueSizes = [...new Set(lineItems.map(li=>li.steelSize).filter(Boolean))];
   if(uniqueSizes.length===1) l1Fields.SteelSize = uniqueSizes[0];
   Object.keys(l1Fields).forEach(k=>{ if(l1Fields[k]===null||l1Fields[k]==='') delete l1Fields[k]; });
@@ -796,20 +799,19 @@ async function savePO(){
   try {
     await createListItem(L1, l1Fields);
     await Promise.all(lineItems.map((li,idx)=>createListItem(L1b,{
-      Title:               `${pono}-${String(idx+1).padStart(2,'0')}`,
-      PONo:                pono,
-      SteelSize:           li.steelSize,
+      Title:                 `${pono}-${String(idx+1).padStart(2,'0')}`,
+      PONo:                  pono,
+      SteelSize:             li.steelSize,
       SteelThicknessSpec_AX: li.steelThick||null,
-      GradeSpec:           li.grade,
-      CoatingType:         li.coating||null,
-      CoilQty:             li.coilQty,
-      TotalWeightTon:      li.weight,
-      PriceUSD:            li.price,
-      TotalUSD:            li.total
+      GradeSpec:             li.grade,
+      CoatingType:           li.coating||null,
+      TotalWeightTon:        li.weight,
+      PriceUSD:              li.price,
+      TotalUSD:              li.total
     })));
 
     icon.innerHTML='';
-    toast(`บันทึก PO สำเร็จ ✓  ${lineItems.length} รายการ / ${totalCoil} ลูก / $${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})}`);
+    toast(`บันทึก PO สำเร็จ ✓  ${lineItems.length} รายการ / ${totalWeight.toFixed(1)} ต. / $${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})}`);
     clearForm();
     poData=[];
     switchTab(0);
