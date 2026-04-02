@@ -838,16 +838,16 @@ async function savePO(){
   Object.keys(l1Fields).forEach(k=>{ if(l1Fields[k]===null||l1Fields[k]===''||l1Fields[k]===undefined) delete l1Fields[k]; });
   console.log('savePO L1 fields:', JSON.stringify(l1Fields));
 
-  // L1b line items
+  // L1b line items — ใช้ internal names จาก debug
   const l1bItems = lineItems.map((li,idx)=>({
     Title:                 `${pono}-${String(idx+1).padStart(2,'0')}`,
-    SteelSize:             li.steelSize||null,
-    SteelThicknessSpec_AX: li.steelThick||null,
-    GradeSpec:             li.grade||null,
-    CoatingType:           li.coating||null,
-    TotalWeightTon:        li.weight,
-    PriceUSD:              li.price,
-    TotalUSD:              li.total
+    SteelSize:             li.steelSize||null,        // custom → display name OK
+    SteelThicknessSpec_AX: li.steelThick||null,       // custom → display name OK
+    field_6:               li.grade||null,            // GradeSpec → field_6
+    field_7:               li.coating||null,          // CoatingType → field_7
+    field_9:               li.weight,                 // TotalWeightTon → field_9
+    field_10:              li.price,                  // PriceUSD → field_10
+    field_11:              li.total                   // TotalUSD → field_11
   }));
 
   const icon = document.getElementById('save-icon');
