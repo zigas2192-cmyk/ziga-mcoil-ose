@@ -456,32 +456,29 @@ const L2 = 'mcoil-ose-L2_LC_FX';
 const L3 = 'mcoil-ose-L3_BL_Shipping';
 const SCOPES = ['Sites.ReadWrite.All','User.Read'];
 
-// ── L1 FIELD MAP (display name → Graph API internal name) ────
-// internal names จาก Console log:
-// Supplier=field_2, GradeSpec=field_6, CoatingType=field_7
-// POStatus=field_12, Incoterms=field_16
-// custom columns (สร้างทีหลัง) ใช้ display name ตรงๆ
+// ── L1 FIELD MAP ────────────────────────────────────────────
+// Choice columns ต้องใช้ display name (ไม่ใช่ field_X)
+// Number/Date/Text columns ใช้ internal name (field_X)
 const F = {
-  PODate:          'field_1',
-  Supplier:        'field_2',
-  ContractNo:      'field_3',
-  GradeSpec:       'field_6',
-  CoatingType:     'field_7',
-  CoilQty:         'field_8',
-  TotalWeightTon:  'field_9',
-  PriceUSD:        'field_10',
-  TotalUSD:        'field_11',
-  POStatus:        'field_12',
-  AgreedDelivery:  'field_13',
-  Incoterms:       'field_16',
-  PaymentTerms:    'field_17',
-  Remark:          'field_19',
-  HasLC:           'field_20',
-  HasBL:           'field_21',
-  MTCReceived:     'field_22',
-  // custom columns — ใช้ display name (internal name = display name)
-  SteelSize:             'SteelSize',
-  SteelThicknessSpec_AX: 'SteelThicknessSpec_AX',
+  PODate:          'field_1',       // Date → internal OK
+  Supplier:        'Supplier',      // Choice → display name
+  ContractNo:      'field_3',       // Text → internal OK
+  GradeSpec:       'GradeSpec',     // Choice → display name
+  CoatingType:     'CoatingType',   // Choice → display name
+  CoilQty:         'field_8',       // Number → internal OK
+  TotalWeightTon:  'field_9',       // Number → internal OK
+  PriceUSD:        'field_10',      // Number → internal OK
+  TotalUSD:        'field_11',      // Number → internal OK
+  POStatus:        'POStatus',      // Choice → display name
+  AgreedDelivery:  'field_13',      // Date → internal OK
+  Incoterms:       'Incoterms',     // Choice → display name
+  PaymentTerms:    'field_17',      // Text → internal OK
+  Remark:          'field_19',      // Text → internal OK
+  HasLC:           'field_20',      // Yes/No → internal OK
+  HasBL:           'field_21',      // Yes/No → internal OK
+  MTCReceived:     'field_22',      // Yes/No → internal OK
+  SteelSize:             'SteelSize',           // Choice → display name
+  SteelThicknessSpec_AX: 'SteelThicknessSpec_AX', // Choice → display name
 };
 
 // ── DYNAMIC CHOICES CACHE ────────────────────────────────────
@@ -636,7 +633,7 @@ async function loadPOList(){
   tbody.innerHTML='';
   try {
     [poData, shipData] = await Promise.all([
-      getListItems(L1, `Title,${F.PODate},${F.Supplier},${F.SteelSize},${F.TotalWeightTon},${F.TotalUSD},${F.POStatus},${F.AgreedDelivery}`),
+      getListItems(L1, `Title,${F.PODate},Supplier,SteelSize,${F.TotalWeightTon},${F.TotalUSD},POStatus,${F.AgreedDelivery}`),
       getListItems(L3, 'Title,ActualArrival').catch(()=>[])
     ]);
     loading.style.display='none';
@@ -645,7 +642,7 @@ async function loadPOList(){
     let totalUSD=0, waitLC=0, inTransit=0;
     poData.forEach(p=>{
       totalUSD += parseFloat(p[F.TotalUSD])||0;
-      const status = p[F.POStatus]||'';
+      const status = p.POStatus||'';
       if(status==='2.Confirmed') waitLC++;
       if(status==='4.Shipped'||status==='5.Arrived') inTransit++;
       const date = p[F.PODate] ? p[F.PODate].substring(0,10) : '—';
@@ -663,8 +660,8 @@ async function loadPOList(){
       tbody.innerHTML += `<tr>
         <td><strong>${p.Title||'—'}</strong></td>
         <td>${date}</td>
-        <td>${p[F.Supplier]||'—'}</td>
-        <td>${p[F.SteelSize]||'—'}</td>
+        <td>${p.Supplier||'—'}</td>
+        <td>${p.SteelSize||'—'}</td>
         <td style="text-align:right;">${p[F.TotalWeightTon] ? Number(p[F.TotalWeightTon]).toLocaleString()+' ต.' : '—'}</td>
         <td style="text-align:right;">${p[F.TotalUSD] ? Number(p[F.TotalUSD]).toLocaleString(undefined,{maximumFractionDigits:0}) : '—'}</td>
         <td style="text-align:center;">${leadTime}</td>
@@ -689,12 +686,12 @@ function openLCForPO(pono){ document.getElementById('lc-po-select').value=pono; 
 function openShipForPO(pono){ document.getElementById('sh-po-select').value=pono; switchTab(3); loadShipRecord(); }
 
 async function populatePOSelects(){
-  if(!poData.length) poData = await getListItems(L1,`Title,${F.Supplier},${F.TotalUSD},${F.POStatus}`).catch(()=>[]);
+  if(!poData.length) poData = await getListItems(L1,`Title,Supplier,${F.TotalUSD},POStatus`).catch(()=>[]);
   ['lc-po-select','sh-po-select'].forEach(id=>{
     const sel = document.getElementById(id);
     const cur = sel.value;
     sel.innerHTML = '<option value="">-- เลือก PO --</option>';
-    poData.forEach(p=>{ sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${p[F.Supplier]||''}</option>`; });
+    poData.forEach(p=>{ sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${p.Supplier||''}</option>`; });
     if(cur) sel.value = cur;
   });
 }
@@ -877,7 +874,7 @@ async function loadLCRecord(){
   form.style.display='block';
   document.getElementById('lc-po-title').textContent = `LC/FX — ${pono}`;
   const po = poData.find(p=>p.Title===document.getElementById('lc-po-select').value);
-  document.getElementById('lc-po-badge').textContent = po?.[F.POStatus]||'';
+  document.getElementById('lc-po-badge').textContent = po?.POStatus||'';
   document.getElementById('lc-po-badge').className = 'badge badge-blue';
 
   // load existing LC record
