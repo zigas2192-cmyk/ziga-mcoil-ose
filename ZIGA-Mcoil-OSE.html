@@ -261,13 +261,13 @@ tr:hover td{background:var(--gray-bg);}
           <div class="field"><label>PO No.<span class="req">*</span></label><input id="f-pono" placeholder="เช่น PO2026-004"/></div>
           <div class="field"><label>วันที่ PO<span class="req">*</span></label><input id="f-podate" type="date"/></div>
           <div class="field"><label>Supplier<span class="req">*</span></label>
-            <select id="f-supplier"><option value="">-- เลือก --</option><option>HBIS HANDAN</option><option>HBIS CHENGDE</option><option>RZ Rizhao Baohua</option></select>
+            <select id="f-supplier"><option value="">-- เลือก --</option></select>
           </div>
         </div>
         <div class="form-grid-3">
           <div class="field"><label>Contract No.</label><input id="f-contract" placeholder="เช่น HF00001004"/></div>
           <div class="field"><label>Incoterms</label>
-            <select id="f-incoterms"><option>CFR</option><option>FOB</option><option>CIF</option><option>EXW</option></select>
+            <select id="f-incoterms"><option value="">-- เลือก --</option></select>
           </div>
           <div class="field"><label>Payment Terms</label><input id="f-payterms" placeholder="เช่น LC at sight"/></div>
         </div>
@@ -552,12 +552,16 @@ async function showApp(){
   const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   document.getElementById('user-initials').textContent = initials;
   await loadChoices();
-  // populate Supplier select จาก choices
+  // populate dropdowns จาก choices จริงของ SharePoint
   const supSel = document.getElementById('f-supplier');
   if(supSel && choicesCache.Supplier.length){
     supSel.innerHTML = makeOpts(choicesCache.Supplier);
   }
-  addLineItem(); // init 1 empty row for new PO form
+  const incSel = document.getElementById('f-incoterms');
+  if(incSel && choicesCache.Incoterms.length){
+    incSel.innerHTML = makeOpts(choicesCache.Incoterms,'CFR');
+  }
+  addLineItem();
   loadPOList();
   populatePOSelects();
 }
@@ -770,7 +774,7 @@ function clearForm(){
   ['f-pono','f-podate','f-contract','f-payterms','f-portload','f-portdest','f-delivery','f-remark']
     .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f-supplier').value='';
-  document.getElementById('f-incoterms').value='CFR';
+  document.getElementById('f-incoterms').value = choicesCache.Incoterms[0]||'';
   document.getElementById('save-err').style.display='none';
   lineItems=[]; liCounter=0;
   document.getElementById('li-tbody').innerHTML='';
