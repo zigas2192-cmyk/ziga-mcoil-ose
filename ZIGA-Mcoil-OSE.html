@@ -480,8 +480,8 @@ const F = {
   SteelSize:             'SteelSize',            // Choice → array
   SteelThicknessSpec_AX: 'SteelThicknessSpec_AX', // Choice → array
 };
-// helper: wrap Choice value เป็น array
-const ch = v => v ? [v] : null;
+// helper: wrap Choice value เป็น array (ไม่ใช้แล้ว — SP columns เป็น Dropdown)
+// const ch = v => v ? [v] : null;
 
 // ── DYNAMIC CHOICES CACHE ────────────────────────────────────
 let choicesCache = { SteelSize:[], SteelThicknessSpec_AX:[], GradeSpec:[], CoatingType:[], Supplier:[], POStatus:[], Incoterms:[] };
@@ -644,10 +644,9 @@ async function loadPOList(){
     let totalUSD=0, waitLC=0, inTransit=0;
     poData.forEach(p=>{
       totalUSD += parseFloat(p[F.TotalUSD])||0;
-      // Choice fields ส่งกลับเป็น array — ต้องอ่าน [0]
-      const supplier = Array.isArray(p[F.Supplier]) ? p[F.Supplier][0] : p[F.Supplier];
-      const steelSize = Array.isArray(p[F.SteelSize]) ? p[F.SteelSize][0] : p[F.SteelSize];
-      const status = Array.isArray(p[F.POStatus]) ? p[F.POStatus][0] : (p[F.POStatus]||'');
+      const supplier = p[F.Supplier]||'';
+      const steelSize = p[F.SteelSize]||'';
+      const status = p[F.POStatus]||'';
       if(status==='2.Confirmed') waitLC++;
       if(status==='4.Shipped'||status==='5.Arrived') inTransit++;
       const date = p[F.PODate] ? p[F.PODate].substring(0,10) : '—';
@@ -697,8 +696,8 @@ async function populatePOSelects(){
     const cur = sel.value;
     sel.innerHTML = '<option value="">-- เลือก PO --</option>';
     poData.forEach(p=>{
-      const sup = Array.isArray(p[F.Supplier]) ? p[F.Supplier][0] : p[F.Supplier];
-      sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${sup||''}</option>`;
+      const sup = p[F.Supplier]||'';
+      sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${sup}</option>`;
     });
     if(cur) sel.value = cur;
   });
@@ -819,7 +818,7 @@ async function savePO(){
   const l1Fields = {
     Title:              pono,
     [F.PODate]:         toISO(podate),
-    [F.Supplier]:       ch(supplier),
+    [F.Supplier]:       supplier||null,
     [F.ContractNo]:     document.getElementById('f-contract').value||null,
     [F.TotalWeightTon]: parseFloat(totalWeight.toFixed(3)),
     [F.TotalUSD]:       parseFloat(totalUSD.toFixed(2)),
@@ -827,7 +826,7 @@ async function savePO(){
     [F.Incoterms]:      document.getElementById('f-incoterms').value||null,
     [F.PaymentTerms]:   document.getElementById('f-payterms').value||null,
     [F.Remark]:         document.getElementById('f-remark').value||null,
-    [F.POStatus]:       ch('1.Draft'),
+    [F.POStatus]:       '1.Draft',
   };
   const uniqueSizes = [...new Set(lineItems.map(li=>li.steelSize).filter(Boolean))];
   if(uniqueSizes.length===1) l1Fields[F.SteelSize] = uniqueSizes[0];
@@ -844,10 +843,10 @@ async function savePO(){
     const l1bItems = lineItems.map((li,idx)=>({
       Title:                 `${pono}-${String(idx+1).padStart(2,'0')}`,
       PONo:                  pono,
-      SteelSize:             ch(li.steelSize),
-      SteelThicknessSpec_AX: ch(li.steelThick),
-      GradeSpec:             ch(li.grade),
-      CoatingType:           ch(li.coating),
+      SteelSize:             li.steelSize||null,
+      SteelThicknessSpec_AX: li.steelThick||null,
+      GradeSpec:             li.grade||null,
+      CoatingType:           li.coating||null,
       TotalWeightTon:        li.weight,
       PriceUSD:              li.price,
       TotalUSD:              li.total
@@ -882,8 +881,7 @@ async function loadLCRecord(){
   form.style.display='block';
   document.getElementById('lc-po-title').textContent = `LC/FX — ${pono}`;
   const po = poData.find(p=>p.Title===document.getElementById('lc-po-select').value);
-  const poStatus = Array.isArray(po?.[F.POStatus]) ? po[F.POStatus][0] : po?.[F.POStatus];
-  document.getElementById('lc-po-badge').textContent = poStatus||'';
+  document.getElementById('lc-po-badge').textContent = po?.[F.POStatus]||'';
   document.getElementById('lc-po-badge').className = 'badge badge-blue';
 
   // load existing LC record
@@ -949,7 +947,7 @@ async function saveLC(){
     else await createListItem(L2, fields);
     // update L1 HasLC
     const po = poData.find(p=>p.Title===pono);
-    if(po?.id) await updateListItem(L1, po.id, { [F.HasLC]: true, [F.POStatus]: ch('3.LC Opened') }).catch(()=>{});
+    if(po?.id) await updateListItem(L1, po.id, { [F.HasLC]: true, [F.POStatus]: '3.LC Opened' }).catch(()=>{});
     toast('บันทึก LC/FX สำเร็จ ✓');
     poData=[]; loadPOList();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
@@ -1043,7 +1041,7 @@ async function saveShipping(){
     // update L1
     const po = poData.find(p=>p.Title===pono);
     const newStatus = fields.ShipStatus==='Completed'?'6.Complete':fields.ShipStatus==='Delivered'||fields.ShipStatus==='Arrived Port'?'5.Arrived':'4.Shipped';
-    if(po?.id) await updateListItem(L1, po.id, { [F.HasBL]: true, [F.MTCReceived]: fields.MTCReceived, [F.POStatus]: ch(newStatus) }).catch(()=>{});
+    if(po?.id) await updateListItem(L1, po.id, { [F.HasBL]: true, [F.MTCReceived]: fields.MTCReceived, [F.POStatus]: newStatus }).catch(()=>{});
     toast('บันทึก Shipping สำเร็จ ✓'+(trucks?` · รถ ${trucks} คัน → Carbon trigger`:''));
     poData=[]; loadPOList();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
