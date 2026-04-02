@@ -814,15 +814,15 @@ async function savePO(){
   const l1Fields = {
     Title:              pono,
     [F.PODate]:         toISO(podate),
-    [F.Supplier]:       supplier ? [supplier] : null,        // Choice → array
+    [F.Supplier]:       supplier||null,
     [F.ContractNo]:     document.getElementById('f-contract').value||null,
     [F.TotalWeightTon]: parseFloat(totalWeight.toFixed(3)),
     [F.TotalUSD]:       parseFloat(totalUSD.toFixed(2)),
     [F.AgreedDelivery]: toISO(document.getElementById('f-delivery').value),
-    [F.Incoterms]:      document.getElementById('f-incoterms').value ? [document.getElementById('f-incoterms').value] : null,  // Choice → array
+    [F.Incoterms]:      document.getElementById('f-incoterms').value||null,
     [F.PaymentTerms]:   document.getElementById('f-payterms').value||null,
     [F.Remark]:         document.getElementById('f-remark').value||null,
-    [F.POStatus]:       ['1.Draft'],                          // Choice → array
+    [F.POStatus]:       '1.Draft',
   };
   const uniqueSizes = [...new Set(lineItems.map(li=>li.steelSize).filter(Boolean))];
   if(uniqueSizes.length===1) l1Fields[F.SteelSize] = uniqueSizes[0];
@@ -839,10 +839,10 @@ async function savePO(){
     const l1bItems = lineItems.map((li,idx)=>({
       Title:                 `${pono}-${String(idx+1).padStart(2,'0')}`,
       PONo:                  pono,
-      SteelSize:             li.steelSize ? [li.steelSize] : null,        // Choice → array
-      SteelThicknessSpec_AX: li.steelThick ? [li.steelThick] : null,     // Choice → array
-      GradeSpec:             li.grade ? [li.grade] : null,                // Choice → array
-      CoatingType:           li.coating ? [li.coating] : null,            // Choice → array
+      SteelSize:             li.steelSize||null,
+      SteelThicknessSpec_AX: li.steelThick||null,
+      GradeSpec:             li.grade||null,
+      CoatingType:           li.coating||null,
       TotalWeightTon:        li.weight,
       PriceUSD:              li.price,
       TotalUSD:              li.total
@@ -943,7 +943,7 @@ async function saveLC(){
     else await createListItem(L2, fields);
     // update L1 HasLC
     const po = poData.find(p=>p.Title===pono);
-    if(po?.id) await updateListItem(L1, po.id, { [F.HasLC]: true, [F.POStatus]: ['3.LC Opened'] }).catch(()=>{});
+    if(po?.id) await updateListItem(L1, po.id, { [F.HasLC]: true, [F.POStatus]: '3.LC Opened' }).catch(()=>{});
     toast('บันทึก LC/FX สำเร็จ ✓');
     poData=[]; loadPOList();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
@@ -1037,7 +1037,7 @@ async function saveShipping(){
     // update L1
     const po = poData.find(p=>p.Title===pono);
     const newStatus = fields.ShipStatus==='Completed'?'6.Complete':fields.ShipStatus==='Delivered'||fields.ShipStatus==='Arrived Port'?'5.Arrived':'4.Shipped';
-    if(po?.id) await updateListItem(L1, po.id, { [F.HasBL]: true, [F.MTCReceived]: fields.MTCReceived, [F.POStatus]: [newStatus] }).catch(()=>{});
+    if(po?.id) await updateListItem(L1, po.id, { [F.HasBL]: true, [F.MTCReceived]: fields.MTCReceived, [F.POStatus]: newStatus }).catch(()=>{});
     toast('บันทึก Shipping สำเร็จ ✓'+(trucks?` · รถ ${trucks} คัน → Carbon trigger`:''));
     poData=[]; loadPOList();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
