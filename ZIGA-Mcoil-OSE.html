@@ -1016,11 +1016,11 @@ async function loadBankSummary(){
   const wrap=document.getElementById('bank-bars');
   const loading=document.getElementById('bank-loading');
   try{
-    const lcItems=await getListItems(L2,'Title,Bank,LCAmountUSD,LCStatus,TotalTHB,FXRate');
+    const lcItems=await getListItems(L2,'Title,field_2,field_5,field_6,field_9,field_7');
     loading.textContent='';
     // group by bank
     const banks={};
-    lcItems.forEach(lc=>{ const b=lc.Bank||'ไม่ระบุ'; if(!banks[b]) banks[b]={limit:0,used:0}; banks[b].used+=parseFloat(lc.LCAmountUSD)||0; });
+    lcItems.forEach(lc=>{ const b=lc.field_2||'ไม่ระบุ'; if(!banks[b]) banks[b]={limit:0,used:0}; banks[b].used+=parseFloat(lc.field_5)||0; });
     // hardcode limit — ในอนาคตอาจทำ config
     const limits={'กสิกรไทย':500000,'ไทยพาณิชย์':350000};
     let html='';
@@ -1039,7 +1039,7 @@ async function loadBankSummary(){
     wrap.innerHTML=html||'<div style="font-size:12px;color:var(--hint);">ยังไม่มีข้อมูล LC</div>';
     // THB summary
     let thbTotal=0,thbPaid=0;
-    lcItems.forEach(lc=>{ thbTotal+=parseFloat(lc.TotalTHB)||0; });
+    lcItems.forEach(lc=>{ thbTotal+=parseFloat(lc.field_9)||0; });
     document.getElementById('lc-thb-total').textContent=thbTotal.toLocaleString(undefined,{maximumFractionDigits:0});
     document.getElementById('lc-thb-paid').textContent=thbPaid.toLocaleString(undefined,{maximumFractionDigits:0});
     document.getElementById('lc-thb-pending').textContent=(thbTotal-thbPaid).toLocaleString(undefined,{maximumFractionDigits:0});
@@ -1059,28 +1059,28 @@ async function loadLCRecord(){
     const items=await getListItems(L2,'*',`fields/Title eq '${pono}'`);
     if(items.length){
       const lc=items[0]; lcItemId=lc.id;
-      document.getElementById('lc-no').value=lc.LCNo||'';
-      document.getElementById('lc-bank').value=lc.Bank||'';
-      document.getElementById('lc-open').value=lc.LCOpenDate?.substring(0,10)||'';
-      document.getElementById('lc-expire').value=lc.LCExpireDate?.substring(0,10)||'';
-      document.getElementById('lc-amount').value=lc.LCAmountUSD||'';
-      document.getElementById('lc-status').value=lc.LCStatus||'Opened';
-      document.getElementById('fx-rate').value=lc.FXRate||'';
-      document.getElementById('fx-type').value=lc.FXType||'Forward';
-      document.getElementById('fx-date').value=lc.FXDate?.substring(0,10)||'';
+      document.getElementById('lc-no').value=lc.field_1||'';
+      document.getElementById('lc-bank').value=lc.field_2||'';
+      document.getElementById('lc-open').value=lc.field_3?.substring(0,10)||'';
+      document.getElementById('lc-expire').value=lc.field_4?.substring(0,10)||'';
+      document.getElementById('lc-amount').value=lc.field_5||'';
+      document.getElementById('lc-status').value=lc.field_6||'Opened';
+      document.getElementById('fx-rate').value=lc.field_7||'';
+      document.getElementById('fx-type').value=lc.field_10||'Forward';
+      document.getElementById('fx-date').value=lc.field_8?.substring(0,10)||'';
       document.getElementById('tr-no').value=lc.TRNo||'';
       document.getElementById('tr-open-date').value=lc.TROpenDate?.substring(0,10)||'';
       document.getElementById('tr-due').value=lc.TRDueDate?.substring(0,10)||'';
       document.getElementById('tr-amount-thb').value=lc.TRAmountTHB||'';
-      document.getElementById('tr-interest-rate').value=lc.TRInterestRate||'';
+      document.getElementById('tr-interest-rate').value=lc.TRInterstRate||'';
       document.getElementById('tr-status').value=lc.TRStatus||'';
       document.getElementById('cc-date').value=lc.CashierCheckDate?.substring(0,10)||'';
       document.getElementById('cc-ref').value=lc.CashierCheckRef||'';
       document.getElementById('tr-paid-date').value=lc.TRRepaidDate?.substring(0,10)||'';
       document.getElementById('tr-repaid-amount').value=lc.TRRepaidAmountTHB||'';
-      document.getElementById('tr-interest-paid').value=lc.TRInterestPaid||'';
+      document.getElementById('tr-interest-paid').value=lc.TRInteresrPaid||'';
       document.getElementById('m2-status').value=lc.M2Status||'';
-      document.getElementById('lc-remark').value=lc.Remark||'';
+      document.getElementById('lc-remark').value=lc.field_11||'';
       calcLCRemain(); calcTHB(); calcTRDaysLeft();
     }
   } catch(e){ console.log('LC not found'); }
@@ -1107,36 +1107,38 @@ async function saveLC(){
   const toISO=v=>v?new Date(v).toISOString():null;
   const fields={
     Title:pono,
-    LCNo:document.getElementById('lc-no').value||null,
-    Bank:document.getElementById('lc-bank').value||null,
-    LCOpenDate:toISO(document.getElementById('lc-open').value),
-    LCExpireDate:toISO(document.getElementById('lc-expire').value),
-    LCAmountUSD:parseFloat(document.getElementById('lc-amount').value)||null,
-    LCStatus:document.getElementById('lc-status').value,
-    FXRate:parseFloat(document.getElementById('fx-rate').value)||null,
-    FXType:document.getElementById('fx-type').value,
-    FXDate:toISO(document.getElementById('fx-date').value),
-    TotalTHB:parseFloat(thbRaw)||null,
+    field_1:document.getElementById('lc-no').value||null,
+    field_2:document.getElementById('lc-bank').value||null,
+    field_3:toISO(document.getElementById('lc-open').value),
+    field_4:toISO(document.getElementById('lc-expire').value),
+    field_5:parseFloat(document.getElementById('lc-amount').value)||null,
+    field_6:document.getElementById('lc-status').value,
+    field_7:parseFloat(document.getElementById('fx-rate').value)||null,
+    field_10:document.getElementById('fx-type').value,
+    field_8:toISO(document.getElementById('fx-date').value),
+    field_9:parseFloat(thbRaw)||null,
     TRNo:document.getElementById('tr-no').value||null,
     TROpenDate:toISO(document.getElementById('tr-open-date').value),
     TRDueDate:toISO(document.getElementById('tr-due').value),
     TRAmountTHB:parseFloat(document.getElementById('tr-amount-thb').value)||null,
-    TRInterestRate:parseFloat(document.getElementById('tr-interest-rate').value)||null,
+    TRInterstRate:parseFloat(document.getElementById('tr-interest-rate').value)||null,
     TRStatus:document.getElementById('tr-status').value||null,
     CashierCheckDate:toISO(document.getElementById('cc-date').value),
     CashierCheckRef:document.getElementById('cc-ref').value||null,
     TRRepaidDate:toISO(document.getElementById('tr-paid-date').value),
     TRRepaidAmountTHB:parseFloat(document.getElementById('tr-repaid-amount').value)||null,
-    TRInterestPaid:parseFloat(document.getElementById('tr-interest-paid').value)||null,
+    TRInteresrPaid:parseFloat(document.getElementById('tr-interest-paid').value)||null,
     M2Status:document.getElementById('m2-status').value||null,
-    Remark:document.getElementById('lc-remark').value||null
+    field_11:document.getElementById('lc-remark').value||null
   };
   const m2s=document.getElementById('m2-status').value;
   const l1StatusMap={'รอเปิด LC':'2.Confirmed','เปิด LC แล้ว':'3.LC Opened','เปิด TR แล้ว':'3.LC Opened','Cashier Check แล้ว':'4.Shipped','จ่ายคืน TR แล้ว':'6.Complete'};
+  // ลบ fields ที่เป็น null/undefined ออกก่อนส่ง (ป้องกัน 400 error จาก unrecognized fields)
+  const cleanFields = Object.fromEntries(Object.entries(fields).filter(([k,v])=>v!==null&&v!==undefined&&v!==''));
   const errEl=document.getElementById('lc-save-err'); errEl.style.display='none';
   try{
-    if(lcItemId) await updateListItem(L2,lcItemId,fields);
-    else await createListItem(L2,fields);
+    if(lcItemId) await updateListItem(L2,lcItemId,cleanFields);
+    else await createListItem(L2,cleanFields);
     const po=poData.find(p=>p.Title===pono);
     const newL1Status=l1StatusMap[m2s]||'3.LC Opened';
     if(po?.id) await updateListItem(L1,po.id,{[F.HasLC]:true,[F.POStatus]:newL1Status}).catch(()=>{});
