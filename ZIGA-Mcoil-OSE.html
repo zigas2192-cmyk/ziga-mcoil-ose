@@ -2,179 +2,169 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ZIGA-Mcoil-OSE</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ZIGA Mcoil-OSE</title>
 <script src="https://unpkg.com/@azure/msal-browser@3.10.0/lib/msal-browser.min.js"></script>
 <style>
-:root {
-  --bg: #f7f7f5;
-  --surface: #ffffff;
-  --border: #e8e8e4;
-  --border-strong: #d0d0c8;
-  --text: #1a1a18;
-  --text-muted: #6b6b66;
-  --text-hint: #a0a09a;
-  --accent: #1a56db;
-  --accent-hover: #1447c0;
-  --accent-bg: #eff4ff;
-  --success: #166534;
-  --success-bg: #dcfce7;
-  --warning: #92400e;
-  --warning-bg: #fef3c7;
-  --danger: #991b1b;
-  --danger-bg: #fee2e2;
-  --gray-bg: #f1f1ee;
-  --radius: 8px;
-  --radius-lg: 12px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+:root{
+  --bg:#f7f7f5;--surface:#fff;--border:#e8e8e4;--border-strong:#d0d0c8;
+  --text:#1a1a18;--muted:#6b6b66;--hint:#a0a09a;
+  --accent:#1a56db;--accent-h:#1447c0;--accent-bg:#eff4ff;
+  --success:#166534;--success-bg:#dcfce7;
+  --warn:#92400e;--warn-bg:#fef3c7;
+  --danger:#991b1b;--danger-bg:#fee2e2;
+  --gray:#f1f1ee;--radius:8px;--radius-lg:12px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;}
 button{font-family:inherit;cursor:pointer;}
 input,select,textarea{font-family:inherit;}
 
-/* ── Layout ── */
-#app{display:flex;flex-direction:column;min-height:100vh;}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
-.topbar-logo{font-size:13px;font-weight:700;background:var(--accent);color:#fff;padding:3px 10px;border-radius:5px;letter-spacing:.3px;}
-.topbar-name{font-size:14px;font-weight:600;color:var(--text);}
-.topbar-sep{color:var(--border-strong);}
-.topbar-user{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);}
-.topbar-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
-.tabs-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;}
-.tab{font-size:13px;font-weight:500;padding:12px 18px;color:var(--text-muted);border-bottom:2px solid transparent;cursor:pointer;transition:color .15s;white-space:nowrap;}
-.tab:hover{color:var(--text);}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.main{flex:1;padding:24px;max-width:1100px;width:100%;margin:0 auto;}
-.screen{display:none;}
-.screen.active{display:block;}
-
 /* ── Login ── */
 #login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg);}
-.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:48px 40px;width:360px;text-align:center;box-shadow:var(--shadow);}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:48px 40px;width:360px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);}
 .login-logo{font-size:15px;font-weight:700;background:var(--accent);color:#fff;padding:6px 14px;border-radius:6px;display:inline-block;margin-bottom:24px;}
-.login-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px;}
-.login-sub{font-size:13px;color:var(--text-muted);margin-bottom:32px;}
+.login-title{font-size:22px;font-weight:700;margin-bottom:6px;}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:32px;}
 .btn-login{width:100%;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s;}
-.btn-login:hover{background:var(--accent-hover);}
+.btn-login:hover{background:var(--accent-h);}
 .ms-icon{width:18px;height:18px;}
 
+/* ── App Layout ── */
+#app{display:none;flex-direction:column;min-height:100vh;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+.topbar-logo{font-size:13px;font-weight:700;background:var(--accent);color:#fff;padding:3px 10px;border-radius:5px;}
+.topbar-name{font-size:14px;font-weight:600;}
+.topbar-user{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);}
+.topbar-avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-bg);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.tabs-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;overflow-x:auto;}
+.tab{font-size:13px;font-weight:500;padding:12px 18px;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.main{flex:1;padding:24px;max-width:1200px;width:100%;margin:0 auto;}
+.screen{display:none;}.screen.active{display:block;}
+
 /* ── Buttons ── */
-.btn{padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);transition:background .12s;}
-.btn:hover{background:var(--gray-bg);}
+.btn{padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;border:1px solid var(--border-strong);background:var(--surface);color:var(--text);}
+.btn:hover{background:var(--gray);}
 .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);}
-.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);}
+.btn-primary:hover{background:var(--accent-h);}
 .btn-sm{padding:4px 10px;font-size:12px;}
 .btn-ghost{border-color:transparent;background:transparent;}
-.btn-ghost:hover{background:var(--gray-bg);}
+.btn-ghost:hover{background:var(--gray);}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border-color:transparent;}
 
-/* ── Cards & Sections ── */
+/* ── Cards ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:16px;}
-.card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.card-title{font-size:14px;font-weight:600;color:var(--text);}
-.section-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-hint);margin-bottom:10px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:14px;font-weight:600;}
 
 /* ── Metrics ── */
-.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr);}}
 .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;}
-.metric-label{font-size:11px;color:var(--text-muted);margin-bottom:4px;}
-.metric-value{font-size:22px;font-weight:700;color:var(--text);}
-.metric-sub{font-size:11px;color:var(--text-hint);margin-top:2px;}
+.metric-label{font-size:11px;color:var(--muted);margin-bottom:4px;}
+.metric-value{font-size:22px;font-weight:700;}
+.metric-sub{font-size:11px;color:var(--hint);margin-top:2px;}
 
 /* ── Table ── */
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);background:var(--gray-bg);border-bottom:1px solid var(--border);}
-td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);background:var(--gray);border-bottom:1px solid var(--border);}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
-tr:hover td{background:var(--gray-bg);}
+tr:hover td{background:var(--gray);}
+.expand-row td{background:var(--bg)!important;padding:0;}
 
 /* ── Form ── */
 .form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
 .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
 .field{display:flex;flex-direction:column;gap:4px;}
-.field label{font-size:12px;font-weight:500;color:var(--text-muted);}
+.field label{font-size:12px;font-weight:500;color:var(--muted);}
 .field label .req{color:#e53e3e;margin-left:2px;}
-.field input,.field select,.field textarea{
-  padding:7px 10px;border:1px solid var(--border-strong);border-radius:var(--radius);
-  font-size:13px;color:var(--text);background:var(--surface);outline:none;transition:border-color .12s;
-}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.08);}
-.field input[readonly]{background:var(--gray-bg);color:var(--text-muted);}
+.field input,.field select,.field textarea{padding:7px 10px;border:1px solid var(--border-strong);border-radius:var(--radius);font-size:13px;background:var(--surface);outline:none;}
+.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,86,219,.08);}
+.field input[readonly]{background:var(--gray);color:var(--muted);}
 .field textarea{resize:vertical;min-height:64px;}
-.form-actions{display:flex;gap:8px;margin-top:4px;}
-
-/* ── Line Items ── */
-.line-item-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px;}
-.line-item-table th{text-align:left;padding:7px 10px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);background:var(--gray-bg);border-bottom:1px solid var(--border);}
-.line-item-table td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
-.line-item-table tr:last-child td{border-bottom:none;}
-.line-item-table input,.line-item-table select{width:100%;padding:5px 8px;border:1px solid var(--border-strong);border-radius:6px;font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);}
-.line-item-table input:focus,.line-item-table select:focus{outline:none;border-color:var(--accent);}
-.line-item-table input[readonly]{background:var(--gray-bg);color:var(--text-muted);}
-.li-total-row{background:var(--accent-bg);font-weight:600;}
-.li-total-row td{border-top:2px solid var(--accent);padding:8px 10px;}
-.btn-add-row{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;border:1.5px dashed var(--accent);background:var(--accent-bg);color:var(--accent);cursor:pointer;transition:all .12s;}
-.btn-add-row:hover{background:#e0eaff;}
-.btn-del-row{background:none;border:none;color:var(--text-hint);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1;}
-.btn-del-row:hover{background:var(--danger-bg);color:var(--danger);}
-
+.form-actions{display:flex;gap:8px;margin-top:16px;}
 
 /* ── Badge ── */
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
 .badge-blue{background:var(--accent-bg);color:var(--accent);}
 .badge-green{background:var(--success-bg);color:var(--success);}
-.badge-amber{background:var(--warning-bg);color:var(--warning);}
+.badge-amber{background:var(--warn-bg);color:var(--warn);}
 .badge-red{background:var(--danger-bg);color:var(--danger);}
-.badge-gray{background:var(--gray-bg);color:var(--text-muted);}
+.badge-gray{background:var(--gray);color:var(--muted);}
 
 /* ── Progress ── */
-.progress-wrap{background:var(--gray-bg);border-radius:20px;height:8px;overflow:hidden;margin:6px 0 2px;}
+.progress-wrap{background:var(--gray);border-radius:20px;height:6px;overflow:hidden;}
 .progress-bar{height:100%;background:var(--accent);border-radius:20px;transition:width .3s;}
 
-/* ── Timeline ── */
-.timeline{display:flex;align-items:flex-start;gap:0;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
-.tl-step{display:flex;flex-direction:column;align-items:center;min-width:100px;}
-.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;z-index:1;}
-.tl-dot-done{background:var(--success-bg);color:var(--success);}
-.tl-dot-active{background:var(--accent-bg);color:var(--accent);border:2px solid var(--accent);}
-.tl-dot-pending{background:var(--gray-bg);color:var(--text-hint);}
-.tl-label{font-size:11px;font-weight:500;color:var(--text-muted);margin-top:4px;text-align:center;}
-.tl-date{font-size:10px;color:var(--text-hint);text-align:center;}
-.tl-line{flex:1;height:2px;background:var(--border);margin-top:14px;min-width:20px;}
-.tl-line-done{background:var(--success);}
+/* ── Flow Steps ── */
+.flow-steps{display:flex;align-items:center;gap:0;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
+.flow-step{display:flex;flex-direction:column;align-items:center;min-width:90px;}
+.flow-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.flow-dot-done{background:var(--success-bg);color:var(--success);}
+.flow-dot-active{background:var(--accent-bg);color:var(--accent);}
+.flow-dot-pending{background:var(--gray);color:var(--muted);}
+.flow-label{font-size:11px;font-weight:600;margin-top:4px;text-align:center;}
+.flow-date{font-size:10px;color:var(--hint);text-align:center;}
+.flow-line{flex:1;height:1px;background:var(--border);min-width:20px;}
+.flow-line-done{background:var(--success);}
 
-/* ── Alerts ── */
+/* ── Line Item Table ── */
+.li-table{width:100%;border-collapse:collapse;font-size:12px;}
+.li-table th{padding:6px 10px;background:var(--bg);font-size:10px;text-transform:uppercase;letter-spacing:.3px;color:var(--hint);border-bottom:1px solid var(--border);}
+.li-table td{padding:6px 8px;border-bottom:1px solid var(--border);}
+.li-table tr:last-child td{border-bottom:none;}
+.li-table input,.li-table select{width:100%;padding:4px 7px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;font-family:inherit;background:var(--surface);}
+.li-table input:focus,.li-table select:focus{outline:none;border-color:var(--accent);}
+.li-table input[readonly]{background:var(--gray);color:var(--muted);}
+.li-total-row{background:var(--accent-bg);}
+.li-total-row td{border-top:1.5px solid var(--accent);font-weight:600;font-size:12px;padding:7px 8px;}
+.btn-add-row{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;border:1.5px dashed var(--accent);background:var(--accent-bg);color:var(--accent);cursor:pointer;}
+.btn-del-row{background:none;border:none;color:var(--hint);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px;line-height:1;}
+.btn-del-row:hover{background:var(--danger-bg);color:var(--danger);}
+
+/* ── Document Checklist ── */
+.doc-module{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;}
+.doc-module-header{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--gray);border-bottom:1px solid var(--border);}
+.doc-module-title{font-size:13px;font-weight:600;flex:1;}
+.doc-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);}
+.doc-row:last-child{border-bottom:none;}
+.doc-icon{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.doc-icon-done{background:var(--success-bg);color:var(--success);}
+.doc-icon-missing{background:var(--gray);color:var(--hint);}
+.doc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.doc-dot-done{background:var(--success);}
+.doc-dot-missing{background:var(--border-strong);}
+.doc-name{font-size:13px;font-weight:500;}
+.doc-name-missing{color:var(--hint);}
+.doc-meta{font-size:11px;color:var(--hint);margin-top:1px;}
+.doc-meta-done{color:var(--muted);}
+.badge-req{font-size:10px;padding:1px 6px;border-radius:10px;background:var(--danger-bg);color:var(--danger);margin-left:4px;}
+.badge-opt{font-size:10px;padding:1px 6px;border-radius:10px;background:var(--gray);color:var(--muted);margin-left:4px;}
+.btn-upload-doc{padding:4px 12px;border-radius:7px;font-size:11px;font-weight:500;border:1px solid var(--border-strong);background:var(--surface);color:var(--muted);cursor:pointer;white-space:nowrap;}
+.btn-upload-doc:hover{border-color:var(--accent);color:var(--accent);}
+.btn-download-doc{padding:4px 12px;border-radius:7px;font-size:11px;font-weight:500;border:1px solid var(--success);color:var(--success);background:transparent;cursor:pointer;white-space:nowrap;}
+
+/* ── Bank Bar ── */
+.bank-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.bank-bar-name{width:90px;font-size:12px;color:var(--muted);flex-shrink:0;}
+.bank-bar-wrap{flex:1;}
+.bank-bar-track{height:10px;background:var(--gray);border-radius:5px;overflow:hidden;margin:4px 0;}
+.bank-bar-fill{height:100%;border-radius:5px;background:var(--accent);}
+.bank-bar-nums{font-size:11px;display:flex;justify-content:space-between;color:var(--muted);}
+
+/* ── Misc ── */
 .alert{padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:12px;}
-.alert-info{background:var(--accent-bg);color:var(--accent);}
 .alert-err{background:var(--danger-bg);color:var(--danger);}
-
-/* ── Spinner ── */
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;}
+.alert-info{background:var(--accent-bg);color:var(--accent);}
+.empty{text-align:center;padding:40px;color:var(--muted);}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-/* ── Toast ── */
-#toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#fff;padding:10px 18px;border-radius:var(--radius);font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999;}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:10px 20px;border-radius:var(--radius-lg);font-size:13px;opacity:0;pointer-events:none;transition:opacity .3s;z-index:9999;white-space:nowrap;}
 #toast.show{opacity:1;}
-
-/* ── Modal ── */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;align-items:center;justify-content:center;}
-.modal-bg.open{display:flex;}
-.modal{background:var(--surface);border-radius:var(--radius-lg);padding:24px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.modal-title{font-size:15px;font-weight:700;}
-.modal-close{background:none;border:none;font-size:20px;color:var(--text-muted);cursor:pointer;line-height:1;}
-
-/* ── Empty state ── */
-.empty{text-align:center;padding:48px 20px;color:var(--text-muted);}
-.empty-icon{font-size:32px;margin-bottom:8px;opacity:.5;}
-
-/* ── Print ── */
-@media print {
-  .topbar,.tabs-bar,.form-actions,.btn,.tbl-actions,#toast{display:none!important;}
-  .main{padding:0;}
-  .card{border:1px solid #ccc;box-shadow:none;}
-}
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--hint);margin-bottom:10px;}
 </style>
 </head>
 <body>
@@ -186,23 +176,18 @@ tr:hover td{background:var(--gray-bg);}
     <div class="login-title">Mcoil-OSE</div>
     <div class="login-sub">ระบบจัดการใบสั่งซื้อ · LC/FX · ชิปปิ้ง<br>เข้าสู่ระบบด้วยบัญชี @ziga.co.th</div>
     <button class="btn-login" onclick="doLogin()">
-      <svg class="ms-icon" viewBox="0 0 21 21" fill="none">
-        <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-        <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-        <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-        <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-      </svg>
+      <svg class="ms-icon" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
       เข้าสู่ระบบด้วย Microsoft
     </button>
     <div id="login-err" style="margin-top:12px;font-size:12px;color:var(--danger);display:none;"></div>
   </div>
 </div>
 
-<!-- MAIN APP (hidden until login) -->
-<div id="app" style="display:none;">
+<!-- APP -->
+<div id="app">
   <div class="topbar">
     <span class="topbar-logo">ZIGA</span>
-    <span class="topbar-sep">/</span>
+    <span style="color:var(--border-strong);">/</span>
     <span class="topbar-name">Mcoil-OSE</span>
     <div class="topbar-user">
       <div class="topbar-avatar" id="user-initials">--</div>
@@ -211,10 +196,11 @@ tr:hover td{background:var(--gray-bg);}
     </div>
   </div>
   <div class="tabs-bar">
-    <div class="tab active" onclick="switchTab(0)">M1 รายการ PO</div>
-    <div class="tab" onclick="switchTab(1)">M1 สร้าง PO ใหม่</div>
-    <div class="tab" onclick="switchTab(2)">M2 LC / FX</div>
-    <div class="tab" onclick="switchTab(3)">M3 ชิปปิ้ง</div>
+    <div class="tab active" onclick="switchTab(0)">📋 M1 รายการ PO</div>
+    <div class="tab" onclick="switchTab(1)">✏️ M1 สร้าง/แก้ไข PO</div>
+    <div class="tab" onclick="switchTab(2)">🏦 M2 LC / FX / TR</div>
+    <div class="tab" onclick="switchTab(3)">🚢 M3 ชิปปิ้ง</div>
+    <div class="tab" onclick="switchTab(4)">📎 เอกสาร</div>
   </div>
   <div class="main">
 
@@ -222,79 +208,74 @@ tr:hover td{background:var(--gray-bg);}
     <div class="screen active" id="s0">
       <div class="metrics">
         <div class="metric"><div class="metric-label">PO ทั้งหมด</div><div class="metric-value" id="m-total">—</div><div class="metric-sub">ปี 2026</div></div>
-        <div class="metric"><div class="metric-label">มูลค่ารวม (USD)</div><div class="metric-value" id="m-usd">—</div><div class="metric-sub" id="m-thb">—</div></div>
-        <div class="metric"><div class="metric-label">รอ LC / อยู่ระหว่างขนส่ง</div><div class="metric-value" id="m-status">—</div><div class="metric-sub">รายการที่ต้องติดตาม</div></div>
+        <div class="metric"><div class="metric-label">มูลค่ารวม (USD)</div><div class="metric-value" id="m-usd">—</div></div>
+        <div class="metric"><div class="metric-label">รอ LC</div><div class="metric-value" id="m-wait-lc">—</div><div class="metric-sub">PO ยังไม่มี LC</div></div>
+        <div class="metric"><div class="metric-label">ระหว่างขนส่ง</div><div class="metric-value" id="m-transit">—</div></div>
       </div>
       <div class="card">
         <div class="card-header">
           <span class="card-title">รายการ PO</span>
-          <div style="margin-left:auto;display:flex;gap:8px;">
-            <button class="btn btn-sm" onclick="loadPOList()"><span id="refresh-icon">↻</span> รีเฟรช</button>
-            <button class="btn btn-sm btn-primary" onclick="switchTab(1)">+ สร้าง PO ใหม่</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-sm" onclick="loadPOList()">↻ รีเฟรช</button>
+            <button class="btn btn-sm btn-primary" onclick="newPO()">+ สร้าง PO ใหม่</button>
           </div>
         </div>
         <div id="po-loading" class="alert alert-info" style="display:none;">กำลังโหลด...</div>
         <div id="po-error" class="alert alert-err" style="display:none;"></div>
         <div class="tbl-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>PO No.</th><th>วันที่ PO</th><th>Supplier</th><th>SteelSize</th>
-                <th style="text-align:right;">น้ำหนัก (ต.)</th>
-                <th style="text-align:right;">มูลค่า (USD)</th>
-                <th style="text-align:center;">Lead Time</th>
-                <th>สถานะ</th><th></th>
-              </tr>
-            </thead>
-            <tbody id="po-tbody"><tr><td colspan="9" class="empty">กำลังโหลดข้อมูล...</td></tr></tbody>
+            <thead><tr>
+              <th style="width:24px;"></th>
+              <th>PO No.</th><th>วันที่</th><th>Supplier</th>
+              <th>รายการ</th><th style="text-align:right;">น้ำหนัก</th>
+              <th style="text-align:right;">USD</th><th style="text-align:center;">Lead Time</th>
+              <th>สถานะ</th><th></th>
+            </tr></thead>
+            <tbody id="po-tbody"><tr><td colspan="10"><div class="empty">กำลังโหลด...</div></td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- S1: NEW PO FORM -->
+    <!-- S1: NEW/EDIT PO FORM -->
     <div class="screen" id="s1">
       <div class="card">
-        <div class="card-header"><span class="card-title">ข้อมูล PO หลัก</span></div>
+        <div class="card-header"><span class="card-title" id="s1-title">สร้าง PO ใหม่</span></div>
         <div class="form-grid-3">
           <div class="field"><label>PO No.<span class="req">*</span></label><input id="f-pono" placeholder="เช่น PO2026-004"/></div>
           <div class="field"><label>วันที่ PO<span class="req">*</span></label><input id="f-podate" type="date"/></div>
-          <div class="field"><label>Supplier<span class="req">*</span></label>
-            <select id="f-supplier"><option value="">-- เลือก --</option></select>
-          </div>
+          <div class="field"><label>Supplier<span class="req">*</span></label><select id="f-supplier"><option value="">-- เลือก --</option></select></div>
         </div>
         <div class="form-grid-3">
           <div class="field"><label>Contract No.</label><input id="f-contract" placeholder="เช่น HF00001004"/></div>
-          <div class="field"><label>Incoterms</label>
-            <select id="f-incoterms"><option value="">-- เลือก --</option></select>
-          </div>
+          <div class="field"><label>Incoterms</label><select id="f-incoterms"><option value="">-- เลือก --</option></select></div>
           <div class="field"><label>Payment Terms</label><input id="f-payterms" placeholder="เช่น LC at sight"/></div>
         </div>
       </div>
+
+      <!-- Line Items -->
       <div class="card">
         <div class="card-header" style="justify-content:space-between;">
           <span class="card-title">รายการสินค้า (Line Items)</span>
           <button class="btn-add-row" onclick="addLineItem()">＋ เพิ่มรายการ</button>
         </div>
         <div class="tbl-wrap">
-          <table class="line-item-table">
-            <thead>
-              <tr>
-                <th style="width:32px;">#</th>
-                <th style="min-width:130px;">SteelSize*</th>
-                <th style="min-width:130px;">Thickness Spec (AX)</th>
-                <th style="min-width:170px;">Grade / Spec*</th>
-                <th style="min-width:110px;">Coating Type</th>
-                <th style="min-width:100px;">น้ำหนัก (ตัน)*</th>
-                <th style="min-width:100px;">ราคา/ตัน (USD)*</th>
-                <th style="min-width:110px;">มูลค่า (USD)</th>
-                <th style="width:36px;"></th>
-              </tr>
-            </thead>
+          <table class="li-table">
+            <thead><tr>
+              <th style="width:28px;">#</th>
+              <th style="min-width:130px;">SteelSize*</th>
+              <th style="min-width:130px;">Thickness Spec (AX)</th>
+              <th style="min-width:160px;">Grade / Spec*</th>
+              <th style="min-width:100px;">Coating</th>
+              <th style="min-width:90px;">น้ำหนัก (ต.)*</th>
+              <th style="min-width:90px;">ราคา/ต. (USD)*</th>
+              <th style="min-width:100px;">มูลค่า (USD)</th>
+              <th style="width:32px;"></th>
+            </tr></thead>
             <tbody id="li-tbody"></tbody>
             <tfoot>
               <tr class="li-total-row">
-                <td colspan="4" style="text-align:right;color:var(--text-muted);font-size:12px;">รวมทั้งหมด</td>
+                <td colspan="4" style="text-align:right;color:var(--muted);font-size:11px;">รวมทั้งหมด</td>
                 <td id="li-total-weight">—</td>
                 <td></td>
                 <td id="li-total-usd" style="color:var(--accent);">—</td>
@@ -304,6 +285,8 @@ tr:hover td{background:var(--gray-bg);}
           </table>
         </div>
       </div>
+
+      <!-- Logistics -->
       <div class="card">
         <div class="card-header"><span class="card-title">Logistics</span></div>
         <div class="form-grid-3">
@@ -313,22 +296,33 @@ tr:hover td{background:var(--gray-bg);}
         </div>
         <div class="field"><label>หมายเหตุ</label><textarea id="f-remark" placeholder="หมายเหตุเพิ่มเติม..."></textarea></div>
       </div>
+
       <div id="save-err" class="alert alert-err" style="display:none;"></div>
       <div class="form-actions">
-        <button class="btn btn-primary" onclick="savePO()"><span id="save-icon"></span> บันทึก PO</button>
+        <button class="btn btn-primary" onclick="savePO()"><span id="save-icon"></span> <span id="save-label">บันทึก PO</span></button>
         <button class="btn" onclick="printPO()">Print PDF</button>
         <button class="btn btn-ghost" onclick="clearForm();switchTab(0)">ยกเลิก</button>
       </div>
     </div>
 
-    <!-- S2: LC/FX -->
+    <!-- S2: LC/FX/TR -->
     <div class="screen" id="s2">
+      <!-- Bank Summary -->
+      <div class="card" id="bank-summary">
+        <div class="card-header"><span class="card-title">วงเงิน LC แต่ละ Bank</span><span id="bank-loading" style="font-size:12px;color:var(--muted);">กำลังโหลด...</span></div>
+        <div id="bank-bars"></div>
+      </div>
+      <!-- THB Summary -->
+      <div class="metrics" style="grid-template-columns:repeat(3,1fr);">
+        <div class="metric"><div class="metric-label">มูลค่า LC เปิดทั้งหมด (THB)</div><div class="metric-value" id="lc-thb-total">—</div></div>
+        <div class="metric"><div class="metric-label" style="color:var(--success);">จ่ายคืน bank แล้ว (TR)</div><div class="metric-value" id="lc-thb-paid" style="color:var(--success);">—</div></div>
+        <div class="metric"><div class="metric-label" style="color:var(--warn);">ยังค้าง bank</div><div class="metric-value" id="lc-thb-pending" style="color:var(--warn);">—</div></div>
+      </div>
+      <!-- LC Select -->
       <div class="card">
-        <div class="card-header">
-          <span class="card-title">เลือก PO ที่ต้องการบันทึก LC/FX</span>
-        </div>
-        <div class="field" style="max-width:320px;">
-          <label>PO No.</label>
+        <div class="card-header"><span class="card-title">บันทึก LC / FX / TR</span></div>
+        <div class="field" style="max-width:320px;margin-bottom:16px;">
+          <label>เลือก PO</label>
           <select id="lc-po-select" onchange="loadLCRecord()"><option value="">-- เลือก PO --</option></select>
         </div>
       </div>
@@ -336,43 +330,60 @@ tr:hover td{background:var(--gray-bg);}
         <div class="card">
           <div class="card-header">
             <span class="card-title" id="lc-po-title">LC / FX</span>
-            <span id="lc-po-badge" class="badge badge-blue" style="margin-left:8px;"></span>
+            <span id="lc-po-badge" class="badge badge-blue"></span>
           </div>
+          <!-- LC -->
+          <div class="section-label">Letter of Credit</div>
           <div class="form-grid-3" style="margin-bottom:12px;">
             <div class="field"><label>LC No.</label><input id="lc-no" placeholder="เช่น LC2026-001"/></div>
-            <div class="field"><label>ธนาคาร</label><input id="lc-bank" placeholder="เช่น กสิกรไทย"/></div>
+            <div class="field"><label>Bank</label><input id="lc-bank" placeholder="เช่น กสิกรไทย"/></div>
             <div class="field"><label>วันที่เปิด LC</label><input id="lc-open" type="date"/></div>
           </div>
-          <div class="form-grid-3">
+          <div class="form-grid-3" style="margin-bottom:16px;">
             <div class="field"><label>วงเงิน LC (USD)</label><input id="lc-amount" type="number" oninput="calcLCRemain()"/></div>
             <div class="field"><label>วันหมดอายุ LC</label><input id="lc-expire" type="date"/></div>
             <div class="field"><label>สถานะ LC</label>
               <select id="lc-status"><option>Draft</option><option>Opened</option><option>Amended</option><option>Utilized</option><option>Expired</option><option>Cancelled</option></select>
             </div>
           </div>
-          <div style="margin:14px 0 6px;">
-            <div class="section-title">วงเงินที่ใช้ไปแล้ว</div>
-            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-              <span style="color:var(--text-muted);">วงเงิน LC (USD)</span>
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span style="color:var(--muted);">วงเงินที่ใช้ (PO value / LC)</span>
               <span id="lc-used-text" style="font-weight:600;">—</span>
             </div>
             <div class="progress-wrap"><div class="progress-bar" id="lc-bar" style="width:0%"></div></div>
-            <div id="lc-remain-text" style="font-size:12px;color:var(--text-hint);"></div>
+            <div id="lc-remain-text" style="font-size:11px;color:var(--hint);margin-top:3px;"></div>
           </div>
-          <div style="border-top:1px solid var(--border);margin:14px 0 12px;"></div>
-          <div class="section-title">อัตราแลกเปลี่ยน (FX)</div>
-          <div class="form-grid-3">
+          <!-- FX -->
+          <div style="border-top:1px solid var(--border);margin:16px 0 12px;"></div>
+          <div class="section-label">FX Rate</div>
+          <div class="form-grid-3" style="margin-bottom:16px;">
             <div class="field"><label>FX Rate (THB/USD)</label><input id="fx-rate" type="number" step="0.01" oninput="calcTHB()"/></div>
-            <div class="field"><label>ประเภท FX</label>
-              <select id="fx-type"><option>Forward</option><option>Spot</option><option>TT</option></select>
-            </div>
-            <div class="field"><label>มูลค่ารวม (THB) — อัตโนมัติ</label><input id="fx-thb" readonly/></div>
+            <div class="field"><label>ประเภท FX</label><select id="fx-type"><option>Forward</option><option>Spot</option><option>TT</option></select></div>
+            <div class="field"><label>วันที่ FX</label><input id="fx-date" type="date"/></div>
           </div>
-          <div class="field" style="margin-top:10px;"><label>หมายเหตุ</label><textarea id="lc-remark"></textarea></div>
+          <div class="form-grid-2" style="margin-bottom:16px;">
+            <div class="field"><label>มูลค่า THB (อัตโนมัติ)</label><input id="fx-thb" readonly/></div>
+          </div>
+          <!-- TR -->
+          <div style="border-top:1px solid var(--border);margin:16px 0 12px;"></div>
+          <div class="section-label">Trust Receipt (TR) — ชำระคืน Bank</div>
+          <div class="form-grid-3" style="margin-bottom:12px;">
+            <div class="field"><label>TR No.</label><input id="tr-no" placeholder="เช่น TR2026-001"/></div>
+            <div class="field"><label>วันครบกำหนด TR</label><input id="tr-due" type="date"/></div>
+            <div class="field"><label>สถานะ TR</label>
+              <select id="tr-status"><option value="">— ยังไม่มี TR —</option><option>รอจ่าย</option><option>จ่ายแล้ว</option></select>
+            </div>
+          </div>
+          <div class="form-grid-2" style="margin-bottom:12px;">
+            <div class="field"><label>วันที่จ่ายจริง</label><input id="tr-paid-date" type="date"/></div>
+            <div class="field"><label>จำนวนที่จ่าย (THB)</label><input id="tr-amount-thb" type="number" step="0.01"/></div>
+          </div>
+          <div class="field"><label>หมายเหตุ</label><textarea id="lc-remark"></textarea></div>
         </div>
         <div id="lc-save-err" class="alert alert-err" style="display:none;"></div>
         <div class="form-actions">
-          <button class="btn btn-primary" onclick="saveLC()">บันทึก LC/FX</button>
+          <button class="btn btn-primary" onclick="saveLC()">บันทึก LC/FX/TR</button>
           <button class="btn" onclick="printLC()">Print PDF</button>
         </div>
       </div>
@@ -391,9 +402,9 @@ tr:hover td{background:var(--gray-bg);}
         <div class="card">
           <div class="card-header">
             <span class="card-title" id="sh-po-title">สถานะการขนส่ง</span>
-            <span id="sh-badge" class="badge badge-amber" style="margin-left:8px;"></span>
+            <span id="sh-badge" class="badge badge-amber"></span>
           </div>
-          <div class="timeline" id="sh-timeline"></div>
+          <div class="flow-steps" id="sh-timeline"></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">Bill of Lading</span></div>
@@ -410,23 +421,20 @@ tr:hover td{background:var(--gray-bg);}
           <div class="form-grid-3">
             <div class="field"><label>น้ำหนักรวม BL (ตัน)</label><input id="sh-weight" type="number" step="0.1"/></div>
             <div class="field"><label>จำนวน Coil</label><input id="sh-coil" type="number"/></div>
-            <div class="field"><label>จำนวนรถขนส่ง <span style="color:var(--accent);font-size:10px;">(trigger Carbon)</span></label><input id="sh-trucks" type="number" placeholder="จำนวนรถ"/></div>
+            <div class="field"><label>จำนวนรถขนส่ง <span style="color:var(--accent);font-size:10px;">(Carbon)</span></label><input id="sh-trucks" type="number"/></div>
           </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">MTC (Mill Test Certificate)</span></div>
-          <div class="form-grid-2" style="margin-bottom:10px;">
-            <div class="field"><label>เลข Certificate</label><input id="sh-mtcno" placeholder="เช่น RE2026022600003"/></div>
-            <div class="field"><label>MTC ได้รับแล้ว</label>
-              <select id="sh-mtc"><option value="No">No</option><option value="Yes">Yes</option></select>
+          <div class="form-grid-2" style="margin-top:12px;">
+            <div class="field"><label>สถานะ</label>
+              <select id="sh-status" onchange="updateTimeline()">
+                <option>Booking</option><option>Sailed</option><option>Arrived Port</option>
+                <option>Customs Cleared</option><option>Delivered</option><option>Completed</option>
+              </select>
+            </div>
+            <div class="field"><label>MTC สถานะ</label>
+              <select id="sh-mtc"><option value="No">ยังไม่ได้รับ</option><option value="Yes">ได้รับแล้ว</option></select>
             </div>
           </div>
-          <div class="field"><label>สถานะการขนส่ง</label>
-            <select id="sh-status" onchange="updateTimeline()" style="max-width:260px;">
-              <option>Booking</option><option>Sailed</option><option>Arrived Port</option>
-              <option>Customs Cleared</option><option>Delivered</option><option>Completed</option>
-            </select>
-          </div>
+          <div class="field" style="margin-top:10px;"><label>เลข MTC Certificate</label><input id="sh-mtcno" placeholder="เช่น RE2026022600003"/></div>
           <div class="field" style="margin-top:10px;"><label>หมายเหตุ</label><textarea id="sh-remark"></textarea></div>
         </div>
         <div id="sh-save-err" class="alert alert-err" style="display:none;"></div>
@@ -437,289 +445,250 @@ tr:hover td{background:var(--gray-bg);}
       </div>
     </div>
 
+    <!-- S4: DOCUMENTS -->
+    <div class="screen" id="s4">
+      <div class="card">
+        <div class="card-header"><span class="card-title">เอกสารแนบ — เลือก PO</span></div>
+        <div class="field" style="max-width:320px;">
+          <label>PO No.</label>
+          <select id="doc-po-select" onchange="loadDocChecklist()"><option value="">-- เลือก PO --</option></select>
+        </div>
+      </div>
+      <div id="doc-checklist" style="display:none;">
+        <div id="doc-m1"></div>
+        <div id="doc-m2"></div>
+        <div id="doc-m3"></div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 </div><!-- /app -->
 
-<!-- TOAST -->
 <div id="toast"></div>
+<!-- hidden file input for uploads -->
+<input type="file" id="file-input" style="display:none;" accept="*/*" onchange="handleFileUpload(event)"/>
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────────
 const CLIENT_ID  = 'ab04415b-543c-441d-86ab-6d024b26df56';
 const TENANT_ID  = '2c7e3ab4-6d2f-491e-87cc-8be0a96f1a68';
-const SITE_ID    = 'zigainnovation.sharepoint.com,/sites/msteams_1fdd76';
 const SITE_PATH  = 'https://graph.microsoft.com/v1.0/sites/zigainnovation.sharepoint.com:/sites/msteams_1fdd76:';
-const L1 = 'mcoil-ose-L1_PurchaseOrder';
+const L1  = 'mcoil-ose-L1_PurchaseOrder';
 const L1b = 'mcoil-ose-L1B_PurchaseOrderLine';
-const L2 = 'mcoil-ose-L2_LC_FX';
-const L3 = 'mcoil-ose-L3_BL_Shipping';
+const L2  = 'mcoil-ose-L2_LC_FX';
+const L3  = 'mcoil-ose-L3_BL_Shipping';
 const SCOPES = ['Sites.ReadWrite.All','User.Read'];
 
-// ── L1 FIELD MAP ────────────────────────────────────────────
-// จาก debug: Choice columns ใช้ field_X + ส่งเป็น array
-// field_16 (Incoterms) เป็น string ธรรมดา
+// ── FIELD MAP L1 ─────────────────────────────────────────────
 const F = {
-  PODate:          'field_1',   // Date
-  Supplier:        'field_2',   // Choice → array
-  ContractNo:      'field_3',   // Text
-  GradeSpec:       'field_6',   // Choice → array
-  CoatingType:     'field_7',   // Choice → array
-  CoilQty:         'field_8',   // Number
-  TotalWeightTon:  'field_9',   // Number
-  PriceUSD:        'field_10',  // Number
-  TotalUSD:        'field_11',  // Number
-  POStatus:        'field_12',  // Choice → array
-  AgreedDelivery:  'field_13',  // Date
-  Incoterms:       'field_16',  // Choice (string ธรรมดา)
-  PaymentTerms:    'field_17',  // Text
-  Remark:          'field_19',  // Text
-  HasLC:           'field_20',  // Yes/No
-  HasBL:           'field_21',  // Yes/No
-  MTCReceived:     'field_22',  // Yes/No
-  SteelSize:             'SteelSize',            // Choice → array
-  SteelThicknessSpec_AX: 'SteelThicknessSpec_AX', // Choice → array
+  PODate:'field_1', Supplier:'field_2', ContractNo:'field_3',
+  GradeSpec:'field_6', CoatingType:'field_7', CoilQty:'field_8',
+  TotalWeightTon:'field_9', PriceUSD:'field_10', TotalUSD:'field_11',
+  POStatus:'field_12', AgreedDelivery:'field_13', Incoterms:'field_16',
+  PaymentTerms:'field_17', Remark:'field_19',
+  HasLC:'field_20', HasBL:'field_21', MTCReceived:'field_22',
+  SteelSize:'SteelSize', SteelThicknessSpec_AX:'SteelThicknessSpec_AX',
 };
-// helper: wrap Choice value เป็น array (ไม่ใช้แล้ว — SP columns เป็น Dropdown)
-// const ch = v => v ? [v] : null;
 
-// ── DYNAMIC CHOICES CACHE ────────────────────────────────────
-let choicesCache = { SteelSize:[], SteelThicknessSpec_AX:[], GradeSpec:[], CoatingType:[], Supplier:[], POStatus:[], Incoterms:[] };
-
+// ── CHOICES CACHE ─────────────────────────────────────────────
+let choicesCache = {SteelSize:[],SteelThicknessSpec_AX:[],GradeSpec:[],CoatingType:[],Supplier:[],POStatus:[],Incoterms:[]};
 async function loadChoices(){
   try {
     const cols = await graphGet(`${SITE_PATH}/lists/${L1}/columns`);
-    // map ทั้ง name (internal) และ displayName เพื่อให้จับได้แน่นอน
     cols.value.forEach(col=>{
       if(!col.choice) return;
-      const choices = col.choice.choices || [];
-      // ตรวจทั้ง internal name และ display name
-      const key = Object.keys(choicesCache).find(k =>
-        col.name === k || col.displayName === k ||
-        col.name?.toLowerCase() === k.toLowerCase() ||
-        col.displayName?.toLowerCase() === k.toLowerCase()
-      );
-      if(key && choices.length) {
-        choicesCache[key] = choices;
-        console.log(`✓ choices loaded: ${key} (${choices.length}) — internal: ${col.name}`);
-      }
+      const key = Object.keys(choicesCache).find(k=>col.name===k||col.displayName===k||col.name?.toLowerCase()===k.toLowerCase()||col.displayName?.toLowerCase()===k.toLowerCase());
+      if(key && col.choice.choices?.length){ choicesCache[key]=col.choice.choices; console.log(`✓ ${key}(${col.choice.choices.length}) internal:${col.name}`); }
     });
-    console.log('choicesCache:', JSON.stringify(choicesCache));
-  } catch(e){ console.warn('loadChoices failed:', e.message); }
+  } catch(e){ console.warn('loadChoices:',e.message); }
+}
+function makeOpts(arr,sel='',ph='-- เลือก --'){
+  return `<option value="">${ph}</option>`+arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v}</option>`).join('');
 }
 
-function makeOpts(arr, sel='', placeholder='-- เลือก --'){
-  return `<option value="">${placeholder}</option>`+arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v}</option>`).join('');
-}
-
-// ── MSAL ────────────────────────────────────────────────────
-const msalConfig = {
-  auth:{ clientId:CLIENT_ID, authority:`https://login.microsoftonline.com/${TENANT_ID}`, redirectUri: window.location.origin+window.location.pathname },
+// ── MSAL ─────────────────────────────────────────────────────
+const msalApp = new msal.PublicClientApplication({
+  auth:{ clientId:CLIENT_ID, authority:`https://login.microsoftonline.com/${TENANT_ID}`, redirectUri:window.location.origin+window.location.pathname },
   cache:{ cacheLocation:'sessionStorage' }
-};
-const msalApp = new msal.PublicClientApplication(msalConfig);
+});
 let currentAccount = null;
-
 async function initMsal(){
   await msalApp.initialize();
   const resp = await msalApp.handleRedirectPromise();
-  if(resp && resp.account){
-    currentAccount = resp.account;
-    showApp();
-  } else {
-    const accounts = msalApp.getAllAccounts();
-    if(accounts.length > 0){ currentAccount = accounts[0]; showApp(); }
-  }
+  if(resp?.account){ currentAccount=resp.account; showApp(); }
+  else { const a=msalApp.getAllAccounts(); if(a.length){ currentAccount=a[0]; showApp(); } }
 }
-
-async function doLogin(){
-  try{ await msalApp.loginRedirect({ scopes: SCOPES }); }
-  catch(e){ showLoginErr(e.message); }
-}
-
-function doLogout(){
-  msalApp.logoutPopup({ account: currentAccount }).then(()=>{ currentAccount=null; location.reload(); });
-}
-
-function showLoginErr(msg){ const el=document.getElementById('login-err'); el.textContent=msg; el.style.display='block'; }
+async function doLogin(){ try{ await msalApp.loginRedirect({scopes:SCOPES}); } catch(e){ showLoginErr(e.message); } }
+function doLogout(){ msalApp.logoutPopup({account:currentAccount}).then(()=>{ currentAccount=null; location.reload(); }); }
+function showLoginErr(msg){ const e=document.getElementById('login-err'); e.textContent=msg; e.style.display='block'; }
 
 async function showApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
-  const name = currentAccount.name || currentAccount.username;
+  const name = currentAccount.name||currentAccount.username;
   document.getElementById('user-name').textContent = name;
-  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  document.getElementById('user-initials').textContent = initials;
+  document.getElementById('user-initials').textContent = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
   await loadChoices();
-  // populate dropdowns จาก choices จริงของ SharePoint
-  const supSel = document.getElementById('f-supplier');
-  if(supSel && choicesCache.Supplier.length){
-    supSel.innerHTML = makeOpts(choicesCache.Supplier);
-  }
-  const incSel = document.getElementById('f-incoterms');
-  if(incSel && choicesCache.Incoterms.length){
-    incSel.innerHTML = makeOpts(choicesCache.Incoterms,'CFR');
-  }
+  // populate dropdowns
+  ['f-supplier','lc-po-select','sh-po-select','doc-po-select'].forEach(id=>{ const el=document.getElementById(id); if(el&&el.tagName==='SELECT'&&id==='f-supplier') el.innerHTML=makeOpts(choicesCache.Supplier); });
+  const incSel=document.getElementById('f-incoterms');
+  if(incSel&&choicesCache.Incoterms.length) incSel.innerHTML=makeOpts(choicesCache.Incoterms,'CFR');
   addLineItem();
   loadPOList();
-  populatePOSelects();
+  loadBankSummary();
 }
 
-// ── TOKEN ────────────────────────────────────────────────────
+// ── TOKEN & GRAPH ─────────────────────────────────────────────
 async function getToken(){
-  const req = { scopes: SCOPES, account: currentAccount };
-  try { return (await msalApp.acquireTokenSilent(req)).accessToken; }
-  catch { return (await msalApp.acquireTokenPopup(req)).accessToken; }
+  try{ return (await msalApp.acquireTokenSilent({scopes:SCOPES,account:currentAccount})).accessToken; }
+  catch{ return (await msalApp.acquireTokenPopup({scopes:SCOPES})).accessToken; }
 }
+async function graphGet(url){ const t=await getToken(); const r=await fetch(url,{headers:{Authorization:`Bearer ${t}`}}); if(!r.ok)throw new Error((await r.json()).error?.message||r.statusText); return r.json(); }
+async function graphPost(url,body){ const t=await getToken(); const r=await fetch(url,{method:'POST',headers:{Authorization:`Bearer ${t}`,'Content-Type':'application/json'},body:JSON.stringify(body)}); if(!r.ok){const e=await r.json(); throw new Error(e?.error?.message||r.statusText);} return r.json(); }
+async function graphPatch(url,body){ const t=await getToken(); const r=await fetch(url,{method:'PATCH',headers:{Authorization:`Bearer ${t}`,'Content-Type':'application/json'},body:JSON.stringify(body)}); if(!r.ok)throw new Error((await r.json()).error?.message||r.statusText); return r.json(); }
+async function graphPostBinary(url,data,contentType){ const t=await getToken(); const r=await fetch(url,{method:'POST',headers:{Authorization:`Bearer ${t}`,'Content-Type':contentType},body:data}); if(!r.ok)throw new Error((await r.json()).error?.message||r.statusText); return r.json(); }
+async function getListItems(list,select='*',filter=''){
+  let url=`${SITE_PATH}/lists/${list}/items?expand=fields(select=${select})`;
+  if(filter) url+=`&$filter=${encodeURIComponent(filter)}`;
+  const d=await graphGet(url); return d.value.map(i=>({id:i.id,...i.fields}));
+}
+async function createListItem(list,fields){ return graphPost(`${SITE_PATH}/lists/${list}/items`,{fields}); }
+async function updateListItem(list,itemId,fields){ return graphPatch(`${SITE_PATH}/lists/${list}/items/${itemId}/fields`,fields); }
 
-// ── GRAPH HELPERS ────────────────────────────────────────────
-async function graphGet(url){
-  const token = await getToken();
-  const r = await fetch(url, { headers:{ Authorization:`Bearer ${token}` } });
-  if(!r.ok) throw new Error((await r.json()).error?.message || r.statusText);
-  return r.json();
-}
-async function graphPost(url, body){
-  const token = await getToken();
-  const r = await fetch(url, { method:'POST', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
-  if(!r.ok){
-    const errJson = await r.json();
-    const msg = errJson?.error?.message || errJson?.['odata.error']?.message?.value || r.statusText;
-    console.error('GraphPost error:', msg, '\nBody sent:', JSON.stringify(body));
-    throw new Error(msg);
-  }
-  return r.json();
-}
-async function graphPatch(url, body){
-  const token = await getToken();
-  const r = await fetch(url, { method:'PATCH', headers:{ Authorization:`Bearer ${token}`, 'Content-Type':'application/json' }, body:JSON.stringify(body) });
-  if(!r.ok) throw new Error((await r.json()).error?.message || r.statusText);
-  return r.json();
-}
-
-async function getListItems(listName, select='*', filter=''){
-  let url = `${SITE_PATH}/lists/${listName}/items?expand=fields(select=${select})`;
-  if(filter) url += `&$filter=${encodeURIComponent(filter)}`;
-  const data = await graphGet(url);
-  return data.value.map(i=>({id:i.id,...i.fields}));
-}
-async function createListItem(listName, fields){
-  return graphPost(`${SITE_PATH}/lists/${listName}/items`, { fields });
-}
-async function updateListItem(listName, itemId, fields){
-  return graphPatch(`${SITE_PATH}/lists/${listName}/items/${itemId}/fields`, fields);
-}
-
-// ── TABS ─────────────────────────────────────────────────────
+// ── TABS ──────────────────────────────────────────────────────
 function switchTab(i){
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
   document.querySelectorAll('.screen').forEach((s,j)=>s.classList.toggle('active',i===j));
   if(i===0) loadPOList();
-  if(i===2||i===3) populatePOSelects();
+  if(i===2){ populatePOSelects(); loadBankSummary(); }
+  if(i===3||i===4) populatePOSelects();
 }
 
-// ── STATUS BADGE ─────────────────────────────────────────────
 function statusBadge(s){
-  const map={'Draft':'badge-gray','Confirmed':'badge-blue','LC Opened':'badge-blue','Shipped':'badge-amber','Arrived':'badge-amber','Completed':'badge-green','Cancelled':'badge-red'};
+  const map={'1.Draft':'badge-gray','2.Confirmed':'badge-blue','3.LC Opened':'badge-blue','4.Shipped':'badge-amber','5.Arrived':'badge-amber','6.Complete':'badge-green','7.Cancelled':'badge-red'};
   return `<span class="badge ${map[s]||'badge-gray'}">${s||'—'}</span>`;
 }
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3500); }
 
 // ── S0: PO LIST ───────────────────────────────────────────────
-let poData = [];
-let shipData = [];
+let poData=[], shipData=[];
 async function loadPOList(){
-  const tbody = document.getElementById('po-tbody');
-  const err = document.getElementById('po-error');
-  const loading = document.getElementById('po-loading');
-  err.style.display='none'; loading.style.display='block';
-  tbody.innerHTML='';
-  try {
-    [poData, shipData] = await Promise.all([
-      getListItems(L1, `Title,${F.PODate},${F.Supplier},${F.SteelSize},${F.TotalWeightTon},${F.TotalUSD},${F.POStatus},${F.AgreedDelivery}`),
-      getListItems(L3, 'Title,ActualArrival').catch(()=>[])
+  const tbody=document.getElementById('po-tbody');
+  const err=document.getElementById('po-error');
+  const loading=document.getElementById('po-loading');
+  err.style.display='none'; loading.style.display='block'; tbody.innerHTML='';
+  try{
+    [poData,shipData]=await Promise.all([
+      getListItems(L1,`Title,${F.PODate},${F.Supplier},${F.SteelSize},${F.TotalWeightTon},${F.TotalUSD},${F.POStatus},${F.AgreedDelivery}`),
+      getListItems(L3,'Title,ActualArrival').catch(()=>[])
     ]);
     loading.style.display='none';
-    if(!poData.length){ tbody.innerHTML='<tr><td colspan="10"><div class="empty"><div class="empty-icon">📋</div>ยังไม่มีข้อมูล PO</div></td></tr>'; return; }
-
-    let totalUSD=0, waitLC=0, inTransit=0;
+    if(!poData.length){ tbody.innerHTML='<tr><td colspan="10"><div class="empty">ยังไม่มีข้อมูล PO</div></td></tr>'; return; }
+    let totalUSD=0,waitLC=0,transit=0;
     poData.forEach(p=>{
-      totalUSD += parseFloat(p[F.TotalUSD])||0;
-      const supplier = p[F.Supplier]||'';
-      const steelSize = p[F.SteelSize]||'';
-      const status = p[F.POStatus]||'';
-      if(status==='2.Confirmed') waitLC++;
-      if(status==='4.Shipped'||status==='5.Arrived') inTransit++;
-      const date = p[F.PODate] ? p[F.PODate].substring(0,10) : '—';
-
-      const ship = shipData.find(s=>s.Title===p.Title);
-      let leadTime = '—';
-      if(p[F.PODate] && ship?.ActualArrival){
-        const days = Math.round((new Date(ship.ActualArrival)-new Date(p[F.PODate]))/(1000*60*60*24));
-        leadTime = days>0 ? `<span style="color:var(--success);font-weight:600;">${days} วัน</span>` : '—';
-      } else if(p[F.PODate] && p[F.AgreedDelivery]){
-        const days = Math.round((new Date(p[F.AgreedDelivery])-new Date(p[F.PODate]))/(1000*60*60*24));
-        leadTime = days>0 ? `<span style="color:var(--text-hint);">~${days} วัน</span>` : '—';
+      totalUSD+=parseFloat(p[F.TotalUSD])||0;
+      const status=p[F.POStatus]||'';
+      if(status==='1.Draft'||status==='2.Confirmed') waitLC++;
+      if(status==='4.Shipped'||status==='5.Arrived') transit++;
+      const date=p[F.PODate]?p[F.PODate].substring(0,10):'—';
+      const ship=shipData.find(s=>s.Title===p.Title);
+      let leadTime='—';
+      if(p[F.PODate]&&ship?.ActualArrival){
+        const d=Math.round((new Date(ship.ActualArrival)-new Date(p[F.PODate]))/(864e5));
+        if(d>0) leadTime=`<span style="color:var(--success);font-weight:600;">${d} วัน</span>`;
+      } else if(p[F.PODate]&&p[F.AgreedDelivery]){
+        const d=Math.round((new Date(p[F.AgreedDelivery])-new Date(p[F.PODate]))/(864e5));
+        if(d>0) leadTime=`<span style="color:var(--hint);">~${d} วัน</span>`;
       }
-
-      tbody.innerHTML += `<tr>
-        <td><strong>${p.Title||'—'}</strong></td>
-        <td>${date}</td>
-        <td>${supplier||'—'}</td>
-        <td>${steelSize||'—'}</td>
-        <td style="text-align:right;">${p[F.TotalWeightTon] ? Number(p[F.TotalWeightTon]).toLocaleString()+' ต.' : '—'}</td>
-        <td style="text-align:right;">${p[F.TotalUSD] ? Number(p[F.TotalUSD]).toLocaleString(undefined,{maximumFractionDigits:0}) : '—'}</td>
+      const lineCount = p[F.SteelSize]?`<span class="badge badge-blue" style="font-size:10px;">มีข้อมูล</span>`:'<span style="color:var(--hint);font-size:11px;">—</span>';
+      tbody.innerHTML+=`
+      <tr style="cursor:pointer;" onclick="toggleLines('${p.Title}',this)">
+        <td style="color:var(--hint);font-size:12px;" id="arr-${p.Title}">▶</td>
+        <td><strong>${p.Title}</strong></td>
+        <td>${date}</td><td>${p[F.Supplier]||'—'}</td>
+        <td id="li-badge-${p.Title}"><span class="badge badge-gray" style="font-size:10px;">กด ▶ ดู</span></td>
+        <td style="text-align:right;">${p[F.TotalWeightTon]?Number(p[F.TotalWeightTon]).toLocaleString()+' ต.':'—'}</td>
+        <td style="text-align:right;">${p[F.TotalUSD]?Number(p[F.TotalUSD]).toLocaleString(undefined,{maximumFractionDigits:0}):'—'}</td>
         <td style="text-align:center;">${leadTime}</td>
         <td>${statusBadge(status)}</td>
         <td style="white-space:nowrap;">
-          <button class="btn btn-sm btn-ghost" onclick="editPO('${p.Title}')">✏️</button>
-          <button class="btn btn-sm btn-ghost" onclick="openLCForPO('${p.Title}')">LC</button>
-          <button class="btn btn-sm btn-ghost" onclick="openShipForPO('${p.Title}')">Ship</button>
-          <button class="btn btn-sm btn-ghost" onclick="printPOById('${p.Title}')">PDF</button>
+          <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();editPO('${p.Title}')">✏️</button>
+          <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openLC('${p.Title}')">LC</button>
+          <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openShip('${p.Title}')">Ship</button>
+          <button class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openDocs('${p.Title}')">📎</button>
         </td>
+      </tr>
+      <tr id="expand-${p.Title}" style="display:none;" class="expand-row">
+        <td colspan="10"><div id="li-content-${p.Title}" style="padding:0 0 0 32px;"></div></td>
       </tr>`;
     });
-    document.getElementById('m-total').textContent = poData.length;
-    document.getElementById('m-usd').textContent = totalUSD.toLocaleString(undefined,{maximumFractionDigits:0});
-    document.getElementById('m-status').textContent = `${waitLC} / ${inTransit}`;
+    document.getElementById('m-total').textContent=poData.length;
+    document.getElementById('m-usd').textContent=totalUSD.toLocaleString(undefined,{maximumFractionDigits:0});
+    document.getElementById('m-wait-lc').textContent=waitLC;
+    document.getElementById('m-transit').textContent=transit;
+    populatePOSelects();
   } catch(e){
     loading.style.display='none';
-    err.textContent = 'โหลดข้อมูลไม่ได้: '+e.message; err.style.display='block';
+    err.textContent='โหลดไม่ได้: '+e.message; err.style.display='block';
   }
 }
 
-function openLCForPO(pono){ document.getElementById('lc-po-select').value=pono; switchTab(2); loadLCRecord(); }
-function openShipForPO(pono){ document.getElementById('sh-po-select').value=pono; switchTab(3); loadShipRecord(); }
+async function toggleLines(pono, row){
+  const expRow=document.getElementById(`expand-${pono}`);
+  const arr=document.getElementById(`arr-${pono}`);
+  const content=document.getElementById(`li-content-${pono}`);
+  const hidden=expRow.style.display==='none';
+  expRow.style.display=hidden?'table-row':'none';
+  arr.textContent=hidden?'▼':'▶';
+  if(hidden&&!content.innerHTML){
+    content.innerHTML='<div style="padding:10px;color:var(--muted);font-size:12px;">กำลังโหลด...</div>';
+    try{
+      const items=await getListItems(L1b,`Title,SteelSize,SteelThicknessSpec_AX,field_6,field_7,field_9,field_10,field_11`);
+      const lines=items.filter(li=>li.Title?.startsWith(pono+'-')).sort((a,b)=>a.Title.localeCompare(b.Title));
+      if(!lines.length){ content.innerHTML='<div style="padding:10px;color:var(--hint);font-size:12px;">ยังไม่มี line items</div>'; return; }
+      const badge=document.getElementById(`li-badge-${pono}`);
+      if(badge) badge.innerHTML=`<span class="badge badge-blue" style="font-size:10px;">${lines.length} ขนาด</span>`;
+      let html=`<table class="li-table" style="margin:8px 0;">
+        <thead><tr><th>#</th><th>SteelSize</th><th>Thickness Spec</th><th>Grade</th><th>Coating</th><th style="text-align:right;">น้ำหนัก (ต.)</th><th style="text-align:right;">ราคา/ต.</th><th style="text-align:right;">มูลค่า USD</th></tr></thead><tbody>`;
+      lines.forEach((li,i)=>{
+        html+=`<tr><td>${i+1}</td><td>${li.SteelSize||'—'}</td><td style="font-size:11px;">${li.SteelThicknessSpec_AX||'—'}</td><td>${li.field_6||'—'}</td><td>${li.field_7||'—'}</td><td style="text-align:right;">${li.field_9||'—'}</td><td style="text-align:right;">${li.field_10?Number(li.field_10).toLocaleString():'—'}</td><td style="text-align:right;">${li.field_11?Number(li.field_11).toLocaleString():'—'}</td></tr>`;
+      });
+      html+='</tbody></table>';
+      content.innerHTML=html;
+    } catch(e){ content.innerHTML=`<div style="padding:10px;color:var(--danger);font-size:12px;">โหลดไม่ได้: ${e.message}</div>`; }
+  }
+}
 
-async function populatePOSelects(){
-  if(!poData.length) poData = await getListItems(L1,`Title,${F.Supplier},${F.TotalUSD},${F.POStatus}`).catch(()=>[]);
-  ['lc-po-select','sh-po-select'].forEach(id=>{
-    const sel = document.getElementById(id);
-    const cur = sel.value;
-    sel.innerHTML = '<option value="">-- เลือก PO --</option>';
-    poData.forEach(p=>{
-      const sup = p[F.Supplier]||'';
-      sel.innerHTML += `<option value="${p.Title}">${p.Title} — ${sup}</option>`;
-    });
-    if(cur) sel.value = cur;
+function openLC(pono){ document.getElementById('lc-po-select').value=pono; switchTab(2); loadLCRecord(); }
+function openShip(pono){ document.getElementById('sh-po-select').value=pono; switchTab(3); loadShipRecord(); }
+function openDocs(pono){ document.getElementById('doc-po-select').value=pono; switchTab(4); loadDocChecklist(); }
+function newPO(){ clearForm(); switchTab(1); }
+
+function populatePOSelects(){
+  if(!poData.length) return;
+  ['lc-po-select','sh-po-select','doc-po-select'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel) return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">-- เลือก PO --</option>';
+    poData.forEach(p=>{ sel.innerHTML+=`<option value="${p.Title}">${p.Title} — ${p[F.Supplier]||''}</option>`; });
+    if(cur) sel.value=cur;
   });
 }
 
-// ── S1: NEW PO FORM — MULTI LINE ITEMS ───────────────────────
-let lineItems = [];
-let liCounter = 0;
+// ── S1: PO FORM ───────────────────────────────────────────────
+let lineItems=[], liCounter=0, editingPOId=null;
 
 function addLineItem(data={}){
-  const id = ++liCounter;
-  lineItems.push({id,steelSize:null,steelThick:null,grade:null,coating:null,coilQty:null,weight:null,price:null,total:null});
-  const tbody = document.getElementById('li-tbody');
-  const tr = document.createElement('tr');
-  tr.id = `li-row-${id}`;
-  // ใช้ choices จาก cache (dynamic จาก SharePoint)
-  const sizeOpts  = makeOpts(choicesCache.SteelSize, data.steelSize||'');
-  const thickOpts = makeOpts(choicesCache.SteelThicknessSpec_AX, data.steelThick||'');
-  const gradeOpts = makeOpts(choicesCache.GradeSpec, data.grade||'');
-  const coatOpts  = makeOpts(choicesCache.CoatingType, data.coating||'');
-  tr.innerHTML = `
-    <td style="text-align:center;color:var(--text-hint);font-size:12px;min-width:28px;" id="li-num-${id}"></td>
+  const id=++liCounter;
+  lineItems.push({id,steelSize:null,steelThick:null,grade:null,coating:null,weight:null,price:null,total:null});
+  const tbody=document.getElementById('li-tbody');
+  const tr=document.createElement('tr'); tr.id=`li-row-${id}`;
+  const sizeOpts=makeOpts(choicesCache.SteelSize,data.steelSize||'');
+  const thickOpts=makeOpts(choicesCache.SteelThicknessSpec_AX,data.steelThick||'');
+  const gradeOpts=makeOpts(choicesCache.GradeSpec,data.grade||'');
+  const coatOpts=makeOpts(choicesCache.CoatingType,data.coating||'');
+  tr.innerHTML=`
+    <td style="text-align:center;color:var(--hint);font-size:11px;" id="li-num-${id}"></td>
     <td><select id="li-size-${id}" onchange="calcLineTotal(${id})">${sizeOpts}</select></td>
     <td><select id="li-thick-${id}" onchange="calcLineTotal(${id})">${thickOpts}</select></td>
     <td><select id="li-grade-${id}" onchange="calcLineTotal(${id})">${gradeOpts}</select></td>
@@ -727,406 +696,455 @@ function addLineItem(data={}){
     <td><input type="number" step="0.001" min="0" id="li-weight-${id}" value="${data.weight||''}" placeholder="0.000" oninput="calcLineTotal(${id})"/></td>
     <td><input type="number" step="0.01" min="0" id="li-price-${id}" value="${data.price||''}" placeholder="0.00" oninput="calcLineTotal(${id})"/></td>
     <td><input readonly id="li-linetotal-${id}" placeholder="—" style="font-weight:600;"/></td>
-    <td><button class="btn-del-row" onclick="removeLineItem(${id})" title="ลบ">×</button></td>
-  `;
+    <td><button class="btn-del-row" onclick="removeLineItem(${id})">×</button></td>`;
   tbody.appendChild(tr);
   renumberRows();
 }
-
 function removeLineItem(id){
   if(lineItems.length<=1){ toast('ต้องมีอย่างน้อย 1 รายการ'); return; }
-  lineItems = lineItems.filter(li=>li.id!==id);
+  lineItems=lineItems.filter(l=>l.id!==id);
   document.getElementById(`li-row-${id}`)?.remove();
-  renumberRows();
-  calcGrandTotal();
+  renumberRows(); calcGrandTotal();
 }
-
 function renumberRows(){
   document.querySelectorAll('#li-tbody tr').forEach((tr,i)=>{
-    const numEl = tr.querySelector('[id^="li-num-"]');
-    if(numEl) numEl.textContent = i+1;
+    const el=tr.querySelector('[id^="li-num-"]'); if(el) el.textContent=i+1;
   });
 }
-
 function calcLineTotal(id){
-  const weight = parseFloat(document.getElementById(`li-weight-${id}`)?.value)||0;
-  const price  = parseFloat(document.getElementById(`li-price-${id}`)?.value)||0;
-  const lineTotal = (weight>0 && price>0) ? weight*price : 0;
-  const totalEl = document.getElementById(`li-linetotal-${id}`);
-  if(totalEl) totalEl.value = lineTotal>0 ? lineTotal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '';
-  const li = lineItems.find(l=>l.id===id);
-  if(li){
-    li.steelSize  = document.getElementById(`li-size-${id}`)?.value||null;
-    li.steelThick = document.getElementById(`li-thick-${id}`)?.value||null;
-    li.grade      = document.getElementById(`li-grade-${id}`)?.value||null;
-    li.coating    = document.getElementById(`li-coating-${id}`)?.value||null;
-    li.weight     = weight||null;
-    li.price      = price||null;
-    li.total      = lineTotal||null;
-  }
+  const w=parseFloat(document.getElementById(`li-weight-${id}`)?.value)||0;
+  const p=parseFloat(document.getElementById(`li-price-${id}`)?.value)||0;
+  const t=w>0&&p>0?w*p:0;
+  const el=document.getElementById(`li-linetotal-${id}`);
+  if(el) el.value=t>0?t.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'';
+  const li=lineItems.find(l=>l.id===id);
+  if(li){ li.steelSize=document.getElementById(`li-size-${id}`)?.value||null; li.steelThick=document.getElementById(`li-thick-${id}`)?.value||null; li.grade=document.getElementById(`li-grade-${id}`)?.value||null; li.coating=document.getElementById(`li-coating-${id}`)?.value||null; li.weight=w||null; li.price=p||null; li.total=t||null; }
   calcGrandTotal();
 }
-
 function calcGrandTotal(){
-  let totalWeight=0, totalUSD=0;
-  lineItems.forEach(li=>{
-    totalWeight += li.weight||0;
-    totalUSD    += li.total||0;
-  });
-  const wEl = document.getElementById('li-total-weight');
-  const uEl = document.getElementById('li-total-usd');
-  if(wEl) wEl.textContent = totalWeight ? totalWeight.toFixed(3)+' ต.' : '—';
-  if(uEl) uEl.textContent = totalUSD    ? totalUSD.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
+  let tw=0,tu=0; lineItems.forEach(li=>{ tw+=li.weight||0; tu+=li.total||0; });
+  const wEl=document.getElementById('li-total-weight'); if(wEl) wEl.textContent=tw?tw.toFixed(3)+' ต.':'—';
+  const uEl=document.getElementById('li-total-usd'); if(uEl) uEl.textContent=tu?tu.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
 }
 
 function clearForm(){
-  ['f-pono','f-podate','f-contract','f-payterms','f-portload','f-portdest','f-delivery','f-remark']
-    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-  document.getElementById('f-pono').readOnly = false;
+  ['f-pono','f-podate','f-contract','f-payterms','f-portload','f-portdest','f-delivery','f-remark'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('f-pono').readOnly=false;
   document.getElementById('f-supplier').value='';
-  document.getElementById('f-incoterms').value = choicesCache.Incoterms[0]||'';
+  document.getElementById('f-incoterms').value=choicesCache.Incoterms[0]||'';
   document.getElementById('save-err').style.display='none';
-  // reset edit mode
-  editingPOId = null;
-  const saveBtn = document.querySelector('.form-actions .btn-primary');
-  if(saveBtn) saveBtn.innerHTML = '<span id="save-icon"></span> บันทึก PO';
-  lineItems=[]; liCounter=0;
-  document.getElementById('li-tbody').innerHTML='';
-  calcGrandTotal();
-  addLineItem();
+  editingPOId=null;
+  document.getElementById('save-icon').innerHTML='';
+  document.getElementById('save-label').textContent='บันทึก PO';
+  document.getElementById('s1-title').textContent='สร้าง PO ใหม่';
+  lineItems=[]; liCounter=0; document.getElementById('li-tbody').innerHTML='';
+  calcGrandTotal(); addLineItem();
 }
 
 async function savePO(){
-  const pono     = document.getElementById('f-pono').value.trim();
-  const supplier = document.getElementById('f-supplier').value;
-  const podate   = document.getElementById('f-podate').value;
-  const errEl    = document.getElementById('save-err');
-  errEl.style.display='none';
-
-  if(!pono||!supplier||!podate){
-    errEl.textContent='กรุณากรอก PO No., Supplier และวันที่ PO'; errEl.style.display='block'; return;
-  }
-  if(!lineItems.length){
-    errEl.textContent='กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ'; errEl.style.display='block'; return;
-  }
+  const pono=document.getElementById('f-pono').value.trim();
+  const supplier=document.getElementById('f-supplier').value;
+  const podate=document.getElementById('f-podate').value;
+  const errEl=document.getElementById('save-err'); errEl.style.display='none';
+  if(!pono||!supplier||!podate){ errEl.textContent='กรุณากรอก PO No., Supplier และวันที่ PO'; errEl.style.display='block'; return; }
+  if(!lineItems.length){ errEl.textContent='กรุณาเพิ่มรายการสินค้า'; errEl.style.display='block'; return; }
   for(const li of lineItems){
-    if(!li.steelSize||!li.grade||!li.weight||!li.price){
-      errEl.textContent='กรุณากรอกข้อมูลให้ครบทุก Line Item (SteelSize, Grade, น้ำหนัก, ราคา/ตัน)';
-      errEl.style.display='block'; return;
-    }
+    if(!li.steelSize||!li.grade||!li.weight||!li.price){ errEl.textContent='กรุณากรอกข้อมูลให้ครบทุก Line Item'; errEl.style.display='block'; return; }
   }
-
-  const totalWeight = lineItems.reduce((s,li)=>s+(li.weight||0),0);
-  const totalUSD    = lineItems.reduce((s,li)=>s+(li.total||0),0);
-  const toISO = v => v ? new Date(v).toISOString() : null;
-
-  const l1Fields = {
-    Title:              pono,
-    [F.PODate]:         toISO(podate),
-    [F.Supplier]:       supplier||null,
-    [F.ContractNo]:     document.getElementById('f-contract').value||null,
-    [F.TotalWeightTon]: parseFloat(totalWeight.toFixed(3)),
-    [F.TotalUSD]:       parseFloat(totalUSD.toFixed(2)),
-    [F.AgreedDelivery]: toISO(document.getElementById('f-delivery').value),
-    [F.Incoterms]:      document.getElementById('f-incoterms').value||null,
-    [F.PaymentTerms]:   document.getElementById('f-payterms').value||null,
-    [F.Remark]:         document.getElementById('f-remark').value||null,
-    [F.POStatus]:       '1.Draft',
+  const tw=lineItems.reduce((s,li)=>s+(li.weight||0),0);
+  const tu=lineItems.reduce((s,li)=>s+(li.total||0),0);
+  const toISO=v=>v?new Date(v).toISOString():null;
+  const l1f={
+    Title:pono,[F.PODate]:toISO(podate),[F.Supplier]:supplier,[F.ContractNo]:document.getElementById('f-contract').value||null,
+    [F.TotalWeightTon]:parseFloat(tw.toFixed(3)),[F.TotalUSD]:parseFloat(tu.toFixed(2)),
+    [F.AgreedDelivery]:toISO(document.getElementById('f-delivery').value),
+    [F.Incoterms]:document.getElementById('f-incoterms').value||null,
+    [F.PaymentTerms]:document.getElementById('f-payterms').value||null,
+    [F.Remark]:document.getElementById('f-remark').value||null,
+    [F.POStatus]:'1.Draft',
   };
-  const uniqueSizes = [...new Set(lineItems.map(li=>li.steelSize).filter(Boolean))];
-  if(uniqueSizes.length===1) l1Fields[F.SteelSize] = uniqueSizes[0];
-  Object.keys(l1Fields).forEach(k=>{ if(l1Fields[k]===null||l1Fields[k]===''||l1Fields[k]===undefined) delete l1Fields[k]; });
-  console.log('savePO L1 fields:', JSON.stringify(l1Fields));
-
-  // L1b line items — ใช้ internal names จาก debug
-  const l1bItems = lineItems.map((li,idx)=>({
-    Title:                 `${pono}-${String(idx+1).padStart(2,'0')}`,
-    SteelSize:             li.steelSize||null,        // custom → display name OK
-    SteelThicknessSpec_AX: li.steelThick||null,       // custom → display name OK
-    field_6:               li.grade||null,            // GradeSpec → field_6
-    field_7:               li.coating||null,          // CoatingType → field_7
-    field_9:               li.weight,                 // TotalWeightTon → field_9
-    field_10:              li.price,                  // PriceUSD → field_10
-    field_11:              li.total                   // TotalUSD → field_11
+  const uniqSizes=[...new Set(lineItems.map(li=>li.steelSize).filter(Boolean))];
+  if(uniqSizes.length===1) l1f[F.SteelSize]=uniqSizes[0];
+  Object.keys(l1f).forEach(k=>{ if(l1f[k]===null||l1f[k]===''||l1f[k]===undefined) delete l1f[k]; });
+  const l1bItems=lineItems.map((li,idx)=>({
+    Title:`${pono}-${String(idx+1).padStart(2,'0')}`,
+    SteelSize:li.steelSize||null, SteelThicknessSpec_AX:li.steelThick||null,
+    field_6:li.grade||null, field_7:li.coating||null,
+    field_9:li.weight, field_10:li.price, field_11:li.total
   }));
-
-  const icon = document.getElementById('save-icon');
-  icon.innerHTML = '<span class="spinner"></span>';
-  try {
+  const icon=document.getElementById('save-icon'); icon.innerHTML='<span class="spinner"></span>';
+  try{
     if(editingPOId){
-      // UPDATE existing PO
-      await updateListItem(L1, editingPOId, l1Fields);
-      // ลบ L1b เก่าแล้วสร้างใหม่
-      const oldLines = await getListItems(L1b, 'Title', `fields/Title startswith '${pono}-'`).catch(()=>[]);
-      // SP ไม่รองรับ DELETE ผ่าน Graph อย่างง่าย — update ทีละรายการแทน
-      await Promise.all(l1bItems.map((fields,idx)=>{
-        const old = oldLines[idx];
-        if(old) return updateListItem(L1b, old.id, fields);
-        else return createListItem(L1b, fields);
-      }));
+      await updateListItem(L1,editingPOId,l1f);
+      const allLines=await getListItems(L1b,'Title').catch(()=>[]);
+      const oldLines=allLines.filter(li=>li.Title?.startsWith(pono+'-')).sort((a,b)=>a.Title.localeCompare(b.Title));
+      await Promise.all(l1bItems.map((fields,idx)=>{ const old=oldLines[idx]; return old?updateListItem(L1b,old.id,fields):createListItem(L1b,fields); }));
     } else {
-      // CREATE new PO
-      await createListItem(L1, l1Fields);
-      await Promise.all(l1bItems.map(fields=>createListItem(L1b, fields)));
+      await createListItem(L1,l1f);
+      await Promise.all(l1bItems.map(f=>createListItem(L1b,f)));
     }
-
     icon.innerHTML='';
-    toast(`${editingPOId?'อัปเดต':'บันทึก'} PO สำเร็จ ✓  ${lineItems.length} รายการ / ${totalWeight.toFixed(1)} ต. / $${totalUSD.toLocaleString(undefined,{maximumFractionDigits:0})}`);
-    clearForm();
-    poData=[];
-    switchTab(0);
-  } catch(e){
-    icon.innerHTML='';
-    errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block';
-  }
+    toast(`${editingPOId?'อัปเดต':'บันทึก'} PO สำเร็จ ✓  ${lineItems.length} รายการ / ${tw.toFixed(1)} ต. / $${tu.toLocaleString(undefined,{maximumFractionDigits:0})}`);
+    clearForm(); poData=[]; switchTab(0);
+  } catch(e){ icon.innerHTML=''; errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
 }
-
-// ── EDIT PO ──────────────────────────────────────────────────
-let editingPOId = null; // SharePoint item id ที่กำลัง edit (null = new)
 
 async function editPO(pono){
-  // โหลด L1 header
   switchTab(1);
-  const errEl = document.getElementById('save-err');
-  errEl.style.display='none';
-  try {
-    const items = await getListItems(L1,
-      `Title,${F.PODate},${F.Supplier},${F.ContractNo},${F.TotalWeightTon},${F.TotalUSD},${F.AgreedDelivery},${F.Incoterms},${F.PaymentTerms},${F.Remark},${F.POStatus}`,
-      `fields/Title eq '${pono}'`
-    );
-    if(!items.length){ toast('ไม่พบ PO นี้'); return; }
-    const po = items[0];
-    editingPOId = po.id;
-
-    // fill header form
-    document.getElementById('f-pono').value = po.Title;
-    document.getElementById('f-pono').readOnly = true; // ไม่ให้เปลี่ยน PO No.
-    document.getElementById('f-podate').value = po[F.PODate]?.substring(0,10)||'';
-    document.getElementById('f-supplier').value = po[F.Supplier]||'';
-    document.getElementById('f-contract').value = po[F.ContractNo]||'';
-    document.getElementById('f-incoterms').value = po[F.Incoterms]||'';
-    document.getElementById('f-payterms').value = po[F.PaymentTerms]||'';
-    document.getElementById('f-delivery').value = po[F.AgreedDelivery]?.substring(0,10)||'';
-    document.getElementById('f-remark').value = po[F.Remark]||'';
-
-    // โหลด L1b line items
-    const prefix = pono+'-';
-    const liItems = await getListItems(L1b,
-      `Title,SteelSize,SteelThicknessSpec_AX,GradeSpec,CoatingType,${F.TotalWeightTon},${F.PriceUSD},${F.TotalUSD}`
-    );
-    const myLines = liItems.filter(li=>li.Title?.startsWith(prefix)).sort((a,b)=>a.Title.localeCompare(b.Title));
-
-    // reset และ populate line items
-    lineItems=[]; liCounter=0;
-    document.getElementById('li-tbody').innerHTML='';
-    if(myLines.length){
-      myLines.forEach(li=>addLineItem({
-        steelSize: li.SteelSize||'',
-        steelThick: li.SteelThicknessSpec_AX||'',
-        grade: li.GradeSpec||'',
-        coating: li.CoatingType||'',
-        weight: li.TotalWeightTon||'',
-        price: li.PriceUSD||''
-      }));
-    } else {
-      addLineItem();
-    }
-
-    // เปลี่ยนปุ่มเป็น "อัปเดต PO"
-    const saveBtn = document.querySelector('.form-actions .btn-primary');
-    if(saveBtn) saveBtn.innerHTML = '<span id="save-icon"></span> 💾 อัปเดต PO';
-    toast(`โหลด ${pono} สำเร็จ — แก้ไขแล้วกด "อัปเดต PO"`);
-  } catch(e){
-    toast('โหลดไม่ได้: '+e.message);
-  }
+  const errEl=document.getElementById('save-err'); errEl.style.display='none';
+  try{
+    const items=await getListItems(L1,`Title,${F.PODate},${F.Supplier},${F.ContractNo},${F.TotalWeightTon},${F.TotalUSD},${F.AgreedDelivery},${F.Incoterms},${F.PaymentTerms},${F.Remark},${F.POStatus}`,`fields/Title eq '${pono}'`);
+    if(!items.length){ toast('ไม่พบ PO'); return; }
+    const po=items[0]; editingPOId=po.id;
+    document.getElementById('f-pono').value=po.Title; document.getElementById('f-pono').readOnly=true;
+    document.getElementById('f-podate').value=po[F.PODate]?.substring(0,10)||'';
+    document.getElementById('f-supplier').value=po[F.Supplier]||'';
+    document.getElementById('f-contract').value=po[F.ContractNo]||'';
+    document.getElementById('f-incoterms').value=po[F.Incoterms]||'';
+    document.getElementById('f-payterms').value=po[F.PaymentTerms]||'';
+    document.getElementById('f-delivery').value=po[F.AgreedDelivery]?.substring(0,10)||'';
+    document.getElementById('f-remark').value=po[F.Remark]||'';
+    const liItems=await getListItems(L1b,'Title,SteelSize,SteelThicknessSpec_AX,field_6,field_7,field_9,field_10,field_11');
+    const myLines=liItems.filter(li=>li.Title?.startsWith(pono+'-')).sort((a,b)=>a.Title.localeCompare(b.Title));
+    lineItems=[]; liCounter=0; document.getElementById('li-tbody').innerHTML='';
+    if(myLines.length) myLines.forEach(li=>addLineItem({steelSize:li.SteelSize||'',steelThick:li.SteelThicknessSpec_AX||'',grade:li.field_6||'',coating:li.field_7||'',weight:li.field_9||'',price:li.field_10||''}));
+    else addLineItem();
+    document.getElementById('s1-title').textContent=`แก้ไข PO — ${pono}`;
+    document.getElementById('save-icon').innerHTML='';
+    document.getElementById('save-label').textContent='💾 อัปเดต PO';
+    toast(`โหลด ${pono} สำเร็จ`);
+  } catch(e){ toast('โหลดไม่ได้: '+e.message); }
 }
-function printPO(){
-  const pono = document.getElementById('f-pono').value || 'PO';
-  document.title = `PO-${pono}`;
-  window.print();
+function printPO(){ document.title=`PO-${document.getElementById('f-pono').value||'PO'}`; window.print(); }
+
+// ── S2: LC/FX/TR ─────────────────────────────────────────────
+let lcItemId=null;
+async function loadBankSummary(){
+  const wrap=document.getElementById('bank-bars');
+  const loading=document.getElementById('bank-loading');
+  try{
+    const lcItems=await getListItems(L2,'Title,Bank,LCAmountUSD,LCStatus,TotalTHB,FXRate');
+    loading.textContent='';
+    // group by bank
+    const banks={};
+    lcItems.forEach(lc=>{ const b=lc.Bank||'ไม่ระบุ'; if(!banks[b]) banks[b]={limit:0,used:0}; banks[b].used+=parseFloat(lc.LCAmountUSD)||0; });
+    // hardcode limit — ในอนาคตอาจทำ config
+    const limits={'กสิกรไทย':500000,'ไทยพาณิชย์':350000};
+    let html='';
+    Object.entries(banks).forEach(([bank,{used}])=>{
+      const limit=limits[bank]||used;
+      const pct=limit>0?Math.min(100,Math.round((used/limit)*100)):100;
+      html+=`<div class="bank-bar-row">
+        <span class="bank-bar-name">${bank}</span>
+        <div class="bank-bar-wrap">
+          <div class="bank-bar-nums"><span style="color:var(--muted);">ใช้ไป $${Number(used).toLocaleString(undefined,{maximumFractionDigits:0})}</span><span style="color:var(--success);">เหลือ $${Number(limit-used).toLocaleString(undefined,{maximumFractionDigits:0})}</span></div>
+          <div class="bank-bar-track"><div class="bank-bar-fill" style="width:${pct}%;"></div></div>
+          <div style="font-size:10px;color:var(--hint);">วงเงิน $${Number(limit).toLocaleString(undefined,{maximumFractionDigits:0})}</div>
+        </div>
+      </div>`;
+    });
+    wrap.innerHTML=html||'<div style="font-size:12px;color:var(--hint);">ยังไม่มีข้อมูล LC</div>';
+    // THB summary
+    let thbTotal=0,thbPaid=0;
+    lcItems.forEach(lc=>{ thbTotal+=parseFloat(lc.TotalTHB)||0; });
+    document.getElementById('lc-thb-total').textContent=thbTotal.toLocaleString(undefined,{maximumFractionDigits:0});
+    document.getElementById('lc-thb-paid').textContent=thbPaid.toLocaleString(undefined,{maximumFractionDigits:0});
+    document.getElementById('lc-thb-pending').textContent=(thbTotal-thbPaid).toLocaleString(undefined,{maximumFractionDigits:0});
+  } catch(e){ loading.textContent='โหลดไม่ได้'; }
 }
 
-// ── S2: LC/FX ─────────────────────────────────────────────────
-let lcItemId = null;
 async function loadLCRecord(){
-  const pono = document.getElementById('lc-po-select').value;
-  const form = document.getElementById('lc-form');
+  const pono=document.getElementById('lc-po-select').value;
+  const form=document.getElementById('lc-form');
   if(!pono){ form.style.display='none'; return; }
   form.style.display='block';
-  document.getElementById('lc-po-title').textContent = `LC/FX — ${pono}`;
-  const po = poData.find(p=>p.Title===document.getElementById('lc-po-select').value);
-  document.getElementById('lc-po-badge').textContent = po?.[F.POStatus]||'';
-  document.getElementById('lc-po-badge').className = 'badge badge-blue';
-
-  // load existing LC record
-  lcItemId = null;
-  try {
-    const items = await getListItems(L2,'*',`fields/Title eq '${pono}'`);
+  document.getElementById('lc-po-title').textContent=`LC/FX/TR — ${pono}`;
+  const po=poData.find(p=>p.Title===pono);
+  document.getElementById('lc-po-badge').textContent=po?.[F.POStatus]||'';
+  lcItemId=null;
+  try{
+    const items=await getListItems(L2,'*',`fields/Title eq 'LC-${pono}'`);
     if(items.length){
-      const lc = items[0]; lcItemId = lc.id;
-      document.getElementById('lc-no').value = lc.LCNo||'';
-      document.getElementById('lc-bank').value = lc.Bank||'';
-      document.getElementById('lc-open').value = lc.LCOpenDate?.substring(0,10)||'';
-      document.getElementById('lc-expire').value = lc.LCExpireDate?.substring(0,10)||'';
-      document.getElementById('lc-amount').value = lc.LCAmountUSD||'';
-      document.getElementById('lc-status').value = lc.LCStatus||'Opened';
-      document.getElementById('fx-rate').value = lc.FXRate||'';
-      document.getElementById('fx-type').value = lc.FXType||'Forward';
-      document.getElementById('lc-remark').value = lc.Remark||'';
+      const lc=items[0]; lcItemId=lc.id;
+      document.getElementById('lc-no').value=lc.LCNo||'';
+      document.getElementById('lc-bank').value=lc.Bank||'';
+      document.getElementById('lc-open').value=lc.LCOpenDate?.substring(0,10)||'';
+      document.getElementById('lc-expire').value=lc.LCExpireDate?.substring(0,10)||'';
+      document.getElementById('lc-amount').value=lc.LCAmountUSD||'';
+      document.getElementById('lc-status').value=lc.LCStatus||'Opened';
+      document.getElementById('fx-rate').value=lc.FXRate||'';
+      document.getElementById('fx-type').value=lc.FXType||'Forward';
+      document.getElementById('fx-date').value=lc.FXDate?.substring(0,10)||'';
+      document.getElementById('tr-no').value=lc.TRNo||'';
+      document.getElementById('tr-due').value=lc.TRDueDate?.substring(0,10)||'';
+      document.getElementById('tr-status').value=lc.TRStatus||'';
+      document.getElementById('tr-paid-date').value=lc.TRPaidDate?.substring(0,10)||'';
+      document.getElementById('tr-amount-thb').value=lc.TRAmountTHB||'';
+      document.getElementById('lc-remark').value=lc.Remark||'';
       calcLCRemain(); calcTHB();
     }
-  } catch(e){ console.log('LC not found, new record'); }
+  } catch(e){ console.log('LC not found'); }
 }
 
 function calcLCRemain(){
-  const amt = parseFloat(document.getElementById('lc-amount').value)||0;
-  const poUSD = poData.find(p=>p.Title===document.getElementById('lc-po-select').value)?.[F.TotalUSD]||0;
+  const amt=parseFloat(document.getElementById('lc-amount').value)||0;
+  const poUSD=poData.find(p=>p.Title===document.getElementById('lc-po-select').value)?.[F.TotalUSD]||0;
   if(!amt){ document.getElementById('lc-used-text').textContent='—'; return; }
-  const pct = Math.min(100, Math.round((poUSD/amt)*100));
-  document.getElementById('lc-bar').style.width = pct+'%';
-  document.getElementById('lc-used-text').textContent = `USD ${Number(poUSD).toLocaleString()} / ${Number(amt).toLocaleString()}`;
-  document.getElementById('lc-remain-text').textContent = `${pct}% · คงเหลือ USD ${Number(amt-poUSD).toLocaleString()}`;
+  const pct=Math.min(100,Math.round((poUSD/amt)*100));
+  document.getElementById('lc-bar').style.width=pct+'%';
+  document.getElementById('lc-used-text').textContent=`USD ${Number(poUSD).toLocaleString()} / ${Number(amt).toLocaleString()}`;
+  document.getElementById('lc-remain-text').textContent=`${pct}% · คงเหลือ USD ${Number(amt-poUSD).toLocaleString()}`;
 }
-
 function calcTHB(){
-  const rate = parseFloat(document.getElementById('fx-rate').value)||0;
-  const pono = document.getElementById('lc-po-select').value;
-  const usd = poData.find(p=>p.Title===pono)?.[F.TotalUSD]||0;
-  if(rate && usd) document.getElementById('fx-thb').value = Number(usd*rate).toLocaleString(undefined,{maximumFractionDigits:0});
-  else document.getElementById('fx-thb').value='';
+  const rate=parseFloat(document.getElementById('fx-rate').value)||0;
+  const usd=poData.find(p=>p.Title===document.getElementById('lc-po-select').value)?.[F.TotalUSD]||0;
+  document.getElementById('fx-thb').value=rate&&usd?Number(usd*rate).toLocaleString(undefined,{maximumFractionDigits:0}):'';
 }
 
 async function saveLC(){
-  const pono = document.getElementById('lc-po-select').value;
-  if(!pono) return;
-  const thbRaw = document.getElementById('fx-thb').value.replace(/,/g,'');
-  const fields = {
-    Title: `LC-${pono}`,
-    PONo: pono,
-    LCNo: document.getElementById('lc-no').value||null,
-    Bank: document.getElementById('lc-bank').value||null,
-    LCOpenDate: document.getElementById('lc-open').value ? new Date(document.getElementById('lc-open').value).toISOString() : null,
-    LCExpireDate: document.getElementById('lc-expire').value ? new Date(document.getElementById('lc-expire').value).toISOString() : null,
-    LCAmountUSD: parseFloat(document.getElementById('lc-amount').value)||null,
-    LCStatus: document.getElementById('lc-status').value,
-    FXRate: parseFloat(document.getElementById('fx-rate').value)||null,
-    FXType: document.getElementById('fx-type').value,
-    TotalTHB: parseFloat(thbRaw)||null,
-    Remark: document.getElementById('lc-remark').value||null
+  const pono=document.getElementById('lc-po-select').value; if(!pono) return;
+  const thbRaw=document.getElementById('fx-thb').value.replace(/,/g,'');
+  const toISO=v=>v?new Date(v).toISOString():null;
+  const fields={
+    Title:`LC-${pono}`, PONo:pono,
+    LCNo:document.getElementById('lc-no').value||null,
+    Bank:document.getElementById('lc-bank').value||null,
+    LCOpenDate:toISO(document.getElementById('lc-open').value),
+    LCExpireDate:toISO(document.getElementById('lc-expire').value),
+    LCAmountUSD:parseFloat(document.getElementById('lc-amount').value)||null,
+    LCStatus:document.getElementById('lc-status').value,
+    FXRate:parseFloat(document.getElementById('fx-rate').value)||null,
+    FXType:document.getElementById('fx-type').value,
+    FXDate:toISO(document.getElementById('fx-date').value),
+    TotalTHB:parseFloat(thbRaw)||null,
+    TRNo:document.getElementById('tr-no').value||null,
+    TRDueDate:toISO(document.getElementById('tr-due').value),
+    TRStatus:document.getElementById('tr-status').value||null,
+    TRPaidDate:toISO(document.getElementById('tr-paid-date').value),
+    TRAmountTHB:parseFloat(document.getElementById('tr-amount-thb').value)||null,
+    Remark:document.getElementById('lc-remark').value||null
   };
-  const errEl = document.getElementById('lc-save-err');
-  errEl.style.display='none';
-  try {
-    if(lcItemId) await updateListItem(L2, lcItemId, fields);
-    else await createListItem(L2, fields);
-    // update L1 HasLC
-    const po = poData.find(p=>p.Title===pono);
-    if(po?.id) await updateListItem(L1, po.id, { [F.HasLC]: true, [F.POStatus]: '3.LC Opened' }).catch(()=>{});
-    toast('บันทึก LC/FX สำเร็จ ✓');
-    poData=[]; loadPOList();
+  const errEl=document.getElementById('lc-save-err'); errEl.style.display='none';
+  try{
+    if(lcItemId) await updateListItem(L2,lcItemId,fields);
+    else await createListItem(L2,fields);
+    const po=poData.find(p=>p.Title===pono);
+    if(po?.id) await updateListItem(L1,po.id,{[F.HasLC]:true,[F.POStatus]:'3.LC Opened'}).catch(()=>{});
+    toast('บันทึก LC/FX/TR สำเร็จ ✓');
+    poData=[]; loadPOList(); loadBankSummary();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
 }
-
 function printLC(){ document.title='LC-'+document.getElementById('lc-po-select').value; window.print(); }
 
 // ── S3: SHIPPING ──────────────────────────────────────────────
-let shItemId = null;
-const SH_STEPS = ['Booking','Sailed','Arrived Port','Customs Cleared','Delivered','Completed'];
-
+let shItemId=null;
+const SH_STEPS=['Booking','Sailed','Arrived Port','Customs Cleared','Delivered','Completed'];
 async function loadShipRecord(){
-  const pono = document.getElementById('sh-po-select').value;
-  const form = document.getElementById('sh-form');
+  const pono=document.getElementById('sh-po-select').value;
+  const form=document.getElementById('sh-form');
   if(!pono){ form.style.display='none'; return; }
   form.style.display='block';
-  document.getElementById('sh-po-title').textContent = `การขนส่ง — ${pono}`;
-  shItemId = null;
-  try {
-    const items = await getListItems(L3,'*',`fields/Title eq '${pono}'`);
+  document.getElementById('sh-po-title').textContent=`การขนส่ง — ${pono}`;
+  shItemId=null;
+  try{
+    const items=await getListItems(L3,'*',`fields/Title eq '${pono}'`);
     if(items.length){
-      const sh = items[0]; shItemId = sh.id;
-      document.getElementById('sh-blno').value = sh.BLNo||'';
-      document.getElementById('sh-bldate').value = sh.BLDate?.substring(0,10)||'';
-      document.getElementById('sh-vessel').value = sh.VesselName||'';
-      document.getElementById('sh-etd').value = sh.ETD?.substring(0,10)||'';
-      document.getElementById('sh-eta').value = sh.ETA?.substring(0,10)||'';
-      document.getElementById('sh-arrived').value = sh.ActualArrival?.substring(0,10)||'';
-      document.getElementById('sh-weight').value = sh.BLWeightTon||'';
-      document.getElementById('sh-coil').value = sh.BLCoilQty||'';
-      document.getElementById('sh-trucks').value = sh.NumTrucks||'';
-      document.getElementById('sh-mtcno').value = sh.MTCCertNo||'';
-      document.getElementById('sh-mtc').value = sh.MTCReceived?'Yes':'No';
-      document.getElementById('sh-status').value = sh.ShipStatus||'Booking';
-      document.getElementById('sh-remark').value = sh.Remark||'';
+      const sh=items[0]; shItemId=sh.id;
+      document.getElementById('sh-blno').value=sh.BLNo||'';
+      document.getElementById('sh-bldate').value=sh.BLDate?.substring(0,10)||'';
+      document.getElementById('sh-vessel').value=sh.VesselName||'';
+      document.getElementById('sh-etd').value=sh.ETD?.substring(0,10)||'';
+      document.getElementById('sh-eta').value=sh.ETA?.substring(0,10)||'';
+      document.getElementById('sh-arrived').value=sh.ActualArrival?.substring(0,10)||'';
+      document.getElementById('sh-weight').value=sh.BLWeightTon||'';
+      document.getElementById('sh-coil').value=sh.BLCoilQty||'';
+      document.getElementById('sh-trucks').value=sh.NumTrucks||'';
+      document.getElementById('sh-mtcno').value=sh.MTCCertNo||'';
+      document.getElementById('sh-mtc').value=sh.MTCReceived?'Yes':'No';
+      document.getElementById('sh-status').value=sh.ShipStatus||'Booking';
+      document.getElementById('sh-remark').value=sh.Remark||'';
     }
   } catch(e){ console.log('Ship not found'); }
   updateTimeline();
 }
 
 function updateTimeline(){
-  const status = document.getElementById('sh-status').value;
-  const etd = document.getElementById('sh-etd').value;
-  const eta = document.getElementById('sh-eta').value;
-  const arrived = document.getElementById('sh-arrived').value;
-  const idx = SH_STEPS.indexOf(status);
-  const dates = { 'Booking':'—', 'Sailed':etd||'—', 'Arrived Port':eta||'—', 'Customs Cleared':'—', 'Delivered':arrived||'—', 'Completed':arrived||'—' };
-  let html = '';
+  const status=document.getElementById('sh-status').value;
+  const etd=document.getElementById('sh-etd').value;
+  const eta=document.getElementById('sh-eta').value;
+  const arrived=document.getElementById('sh-arrived').value;
+  const idx=SH_STEPS.indexOf(status);
+  const dates={'Booking':'','Sailed':etd||'','Arrived Port':eta||'','Customs Cleared':'','Delivered':arrived||'','Completed':arrived||''};
+  let html='';
   SH_STEPS.forEach((step,i)=>{
-    const done = i < idx;
-    const active = i === idx;
-    const dotClass = done?'tl-dot-done':active?'tl-dot-active':'tl-dot-pending';
-    html += `<div class="tl-step">
-      <div class="tl-dot ${dotClass}">${done?'✓':i+1}</div>
-      <div class="tl-label">${step}</div>
-      <div class="tl-date">${dates[step]||''}</div>
-    </div>`;
-    if(i < SH_STEPS.length-1) html += `<div class="tl-line ${done?'tl-line-done':''}"></div>`;
+    const done=i<idx,active=i===idx;
+    const dotClass=done?'flow-dot-done':active?'flow-dot-active':'flow-dot-pending';
+    html+=`<div class="flow-step"><div class="flow-dot ${dotClass}">${done?'✓':i+1}</div><div class="flow-label">${step}</div><div class="flow-date">${dates[step]}</div></div>`;
+    if(i<SH_STEPS.length-1) html+=`<div class="flow-line ${done?'flow-line-done':''}"></div>`;
   });
-  document.getElementById('sh-timeline').innerHTML = html;
-  document.getElementById('sh-badge').textContent = status;
+  document.getElementById('sh-timeline').innerHTML=html;
+  document.getElementById('sh-badge').textContent=status;
 }
 
 async function saveShipping(){
-  const pono = document.getElementById('sh-po-select').value;
-  if(!pono) return;
-  const trucks = parseInt(document.getElementById('sh-trucks').value)||0;
-  const fields = {
-    Title: `BL-${pono}`,
-    PONo: pono,
-    BLNo: document.getElementById('sh-blno').value||null,
-    BLDate: document.getElementById('sh-bldate').value ? new Date(document.getElementById('sh-bldate').value).toISOString() : null,
-    VesselName: document.getElementById('sh-vessel').value||null,
-    ETD: document.getElementById('sh-etd').value ? new Date(document.getElementById('sh-etd').value).toISOString() : null,
-    ETA: document.getElementById('sh-eta').value ? new Date(document.getElementById('sh-eta').value).toISOString() : null,
-    ActualArrival: document.getElementById('sh-arrived').value ? new Date(document.getElementById('sh-arrived').value).toISOString() : null,
-    BLWeightTon: parseFloat(document.getElementById('sh-weight').value)||null,
-    BLCoilQty: parseInt(document.getElementById('sh-coil').value)||null,
-    NumTrucks: trucks||null,
-    MTCCertNo: document.getElementById('sh-mtcno').value||null,
-    MTCReceived: document.getElementById('sh-mtc').value==='Yes',
-    ShipStatus: document.getElementById('sh-status').value,
-    CarbonGenerated: false,
-    Remark: document.getElementById('sh-remark').value||null
+  const pono=document.getElementById('sh-po-select').value; if(!pono) return;
+  const trucks=parseInt(document.getElementById('sh-trucks').value)||0;
+  const toISO=v=>v?new Date(v).toISOString():null;
+  const fields={
+    Title:pono, PONo:pono,
+    BLNo:document.getElementById('sh-blno').value||null,
+    BLDate:toISO(document.getElementById('sh-bldate').value),
+    VesselName:document.getElementById('sh-vessel').value||null,
+    ETD:toISO(document.getElementById('sh-etd').value),
+    ETA:toISO(document.getElementById('sh-eta').value),
+    ActualArrival:toISO(document.getElementById('sh-arrived').value),
+    BLWeightTon:parseFloat(document.getElementById('sh-weight').value)||null,
+    BLCoilQty:parseInt(document.getElementById('sh-coil').value)||null,
+    NumTrucks:trucks||null,
+    MTCCertNo:document.getElementById('sh-mtcno').value||null,
+    MTCReceived:document.getElementById('sh-mtc').value==='Yes',
+    ShipStatus:document.getElementById('sh-status').value,
+    CarbonGenerated:false,
+    Remark:document.getElementById('sh-remark').value||null
   };
-  const errEl = document.getElementById('sh-save-err');
-  errEl.style.display='none';
-  try {
-    if(shItemId) await updateListItem(L3, shItemId, fields);
-    else await createListItem(L3, fields);
-    // update L1
-    const po = poData.find(p=>p.Title===pono);
-    const newStatus = fields.ShipStatus==='Completed'?'6.Complete':fields.ShipStatus==='Delivered'||fields.ShipStatus==='Arrived Port'?'5.Arrived':'4.Shipped';
-    if(po?.id) await updateListItem(L1, po.id, { [F.HasBL]: true, [F.MTCReceived]: fields.MTCReceived, [F.POStatus]: newStatus }).catch(()=>{});
+  const errEl=document.getElementById('sh-save-err'); errEl.style.display='none';
+  try{
+    if(shItemId) await updateListItem(L3,shItemId,fields);
+    else await createListItem(L3,fields);
+    const po=poData.find(p=>p.Title===pono);
+    const ns=fields.ShipStatus==='Completed'?'6.Complete':fields.ShipStatus==='Delivered'||fields.ShipStatus==='Arrived Port'?'5.Arrived':'4.Shipped';
+    if(po?.id) await updateListItem(L1,po.id,{[F.HasBL]:true,[F.MTCReceived]:fields.MTCReceived,[F.POStatus]:ns}).catch(()=>{});
     toast('บันทึก Shipping สำเร็จ ✓'+(trucks?` · รถ ${trucks} คัน → Carbon trigger`:''));
     poData=[]; loadPOList();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
 }
-
 function printShipping(){ document.title='Ship-'+document.getElementById('sh-po-select').value; window.print(); }
 
-// ── TOAST ─────────────────────────────────────────────────────
-function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3000); }
+// ── S4: DOCUMENT CHECKLIST ────────────────────────────────────
+let currentDocPO=null, pendingUploadDoc=null;
 
-// ── INIT ──────────────────────────────────────────────────────
+// รายการเอกสารที่ควรมี แยกตาม module
+const DOC_DEFS = {
+  m1:[
+    {key:'PO',label:'Purchase Order',req:true},
+    {key:'INV',label:'Invoice จาก Supplier',req:true},
+    {key:'CTR',label:'Contract / Sales Confirmation',req:false},
+  ],
+  m2:[
+    {key:'LC',label:'ใบ LC จาก Bank',req:true},
+    {key:'SWT',label:'SWIFT MT700',req:false},
+    {key:'TR',label:'ใบ TR จาก Bank',req:true},
+    {key:'FX',label:'หลักฐาน FX / Forward Contract',req:false},
+  ],
+  m3:[
+    {key:'BL',label:'Bill of Lading',req:true},
+    {key:'PKL',label:'Packing List',req:true},
+    {key:'MTC',label:'MTC (Mill Test Certificate)',req:true},
+    {key:'CUS',label:'ใบขนสินค้า / Customs',req:false},
+  ]
+};
+
+async function loadDocChecklist(){
+  const pono=document.getElementById('doc-po-select').value;
+  const wrap=document.getElementById('doc-checklist');
+  if(!pono){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  currentDocPO=pono;
+  // โหลด attachments จาก L1, L2, L3 พร้อมกัน
+  try{
+    // หา item id ของแต่ละ list
+    const [l1Items,l2Items,l3Items]=await Promise.all([
+      getListItems(L1,'Title',`fields/Title eq '${pono}'`),
+      getListItems(L2,'Title',`fields/Title eq 'LC-${pono}'`).catch(()=>[]),
+      getListItems(L3,'Title',`fields/Title eq '${pono}'`).catch(()=>[])
+    ]);
+    const l1id=l1Items[0]?.id, l2id=l2Items[0]?.id, l3id=l3Items[0]?.id;
+    // โหลด attachments แต่ละ list
+    const [atL1,atL2,atL3]=await Promise.all([
+      l1id?graphGet(`${SITE_PATH}/lists/${L1}/items/${l1id}/attachments`).then(r=>r.value||[]).catch(()=>[]):[],
+      l2id?graphGet(`${SITE_PATH}/lists/${L2}/items/${l2id}/attachments`).then(r=>r.value||[]).catch(()=>[]):[],
+      l3id?graphGet(`${SITE_PATH}/lists/${L3}/items/${l3id}/attachments`).then(r=>r.value||[]).catch(()=>[]):[]
+    ]);
+    // render แต่ละ module
+    renderDocModule('doc-m1','📋 M1 — Purchase Order',DOC_DEFS.m1,atL1,L1,l1id);
+    renderDocModule('doc-m2','🏦 M2 — LC / FX / TR',DOC_DEFS.m2,atL2,L2,l2id);
+    renderDocModule('doc-m3','🚢 M3 — Shipping / BL',DOC_DEFS.m3,atL3,L3,l3id);
+  } catch(e){ document.getElementById('doc-m1').innerHTML=`<div class="alert alert-err">โหลดไม่ได้: ${e.message}</div>`; }
+}
+
+function renderDocModule(containerId,title,defs,attachments,listName,itemId){
+  const container=document.getElementById(containerId);
+  // map attachments by prefix key
+  const attMap={};
+  (attachments||[]).forEach(a=>{ const k=a.name?.split('_')[0]?.toUpperCase(); if(k) attMap[k]=a; });
+  const done=defs.filter(d=>attMap[d.key]||defs.filter(d2=>d2.key===d.key&&attachments.some(a=>a.name?.toUpperCase().includes(d.key)))[0]).length;
+  // count อย่างง่าย: ถ้า attachment มีชื่อขึ้นต้นด้วย key
+  const doneCount=defs.filter(d=>attachments.some(a=>a.name?.toUpperCase().startsWith(d.key))).length;
+  const total=defs.length;
+  const allDone=doneCount===total;
+  const reqDone=defs.filter(d=>d.req).every(d=>attachments.some(a=>a.name?.toUpperCase().startsWith(d.key)));
+  const countColor=allDone?'color:var(--success);':reqDone?'color:var(--warn);':'color:var(--danger);';
+  let html=`<div class="doc-module">
+    <div class="doc-module-header">
+      <span class="doc-module-title">${title}</span>
+      <span style="font-size:12px;${countColor}">${doneCount}/${total}</span>
+      <div class="progress-wrap" style="width:80px;margin-left:8px;"><div class="progress-bar" style="width:${Math.round(doneCount/total*100)}%;"></div></div>
+    </div>`;
+  defs.forEach(def=>{
+    const att=attachments.find(a=>a.name?.toUpperCase().startsWith(def.key));
+    const hasDone=!!att;
+    html+=`<div class="doc-row">
+      <div class="doc-dot ${hasDone?'doc-dot-done':'doc-dot-missing'}"></div>
+      <div class="doc-icon ${hasDone?'doc-icon-done':'doc-icon-missing'}">${def.key.substring(0,3)}</div>
+      <div style="flex:1;">
+        <div class="doc-name ${hasDone?'':'doc-name-missing'}">${def.label}<span class="${def.req?'badge-req':'badge-opt'}">${def.req?'จำเป็น':'ถ้ามี'}</span></div>
+        <div class="doc-meta ${hasDone?'doc-meta-done':''}">${hasDone?att.name:'ยังไม่ได้ upload'}</div>
+      </div>
+      ${hasDone?
+        `<button class="btn-download-doc" onclick="downloadAttachment('${att.contentUrl||''}','${att.name}')">ดาวน์โหลด</button>`:
+        itemId?`<button class="btn-upload-doc" onclick="triggerUpload('${listName}','${itemId}','${def.key}')">+ Upload</button>`:`<button class="btn-upload-doc" style="opacity:.4;cursor:default;">รอ</button>`
+      }
+    </div>`;
+  });
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+function triggerUpload(listName,itemId,docKey){
+  pendingUploadDoc={listName,itemId,docKey};
+  document.getElementById('file-input').click();
+}
+
+async function handleFileUpload(event){
+  const file=event.target.files[0]; if(!file||!pendingUploadDoc) return;
+  const {listName,itemId,docKey}=pendingUploadDoc;
+  // ตั้งชื่อไฟล์เป็น KEY_originalname
+  const fname=`${docKey}_${file.name}`;
+  toast('กำลัง upload...');
+  try{
+    const arrayBuffer=await file.arrayBuffer();
+    await graphPostBinary(
+      `${SITE_PATH}/lists/${listName}/items/${itemId}/attachments`,
+      arrayBuffer, file.type||'application/octet-stream'
+    );
+    toast(`Upload ${fname} สำเร็จ ✓`);
+    loadDocChecklist(); // refresh
+  } catch(e){
+    // SP attachments ใช้ endpoint แบบ multipart
+    toast('Upload ไม่ได้: '+e.message);
+  }
+  event.target.value=''; pendingUploadDoc=null;
+}
+
+async function downloadAttachment(url,name){
+  if(!url){ toast('ไม่มี URL'); return; }
+  const t=await getToken();
+  const r=await fetch(url,{headers:{Authorization:`Bearer ${t}`}});
+  const blob=await r.blob();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click();
+}
+
+// ── TOAST & INIT ──────────────────────────────────────────────
 initMsal().catch(e=>showLoginErr(e.message));
 </script>
 </body>
