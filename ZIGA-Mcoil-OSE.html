@@ -351,6 +351,7 @@ tr:hover td{background:var(--gray);}
           <div class="card-header">
             <span class="card-title" id="lc-po-title">LC / FX</span>
             <span id="lc-po-badge" class="badge badge-blue"></span>
+            <span id="lc-contract-no" style="font-size:12px;color:var(--muted);margin-left:8px;"></span>
           </div>
           <!-- LC -->
           <div class="section-label">Letter of Credit</div>
@@ -1054,6 +1055,8 @@ async function loadLCRecord(){
   document.getElementById('lc-po-title').textContent=`LC/FX/TR — ${pono}`;
   const po=poData.find(p=>p.Title===pono);
   document.getElementById('lc-po-badge').textContent=po?.[F.POStatus]||'';
+  const contractEl=document.getElementById('lc-contract-no');
+  if(contractEl) contractEl.textContent=po?.[F.ContractNo]?`Contract: ${po[F.ContractNo]}`:''
   lcItemId=null;
   try{
     const items=await getListItems(L2,'*',`fields/Title eq '${pono}'`);
