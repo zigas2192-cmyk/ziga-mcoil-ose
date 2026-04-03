@@ -1348,24 +1348,22 @@ async function handleFileUpload(event){
   try{
     const arrayBuffer=await file.arrayBuffer();
     const t=await getToken();
-    // SharePoint attachment: POST multipart/form-data
-    const formData=new FormData();
-    formData.append('file', new Blob([arrayBuffer],{type:file.type||'application/octet-stream'}), fname);
-    const url=`${SITE_PATH}/lists/${listName}/items/${itemId}/attachments`;
+    // ใช้ SharePoint REST API (ไม่ผ่าน Graph) — รองรับ attachment ได้จริง
+    const spBase='https://zigainnovation.sharepoint.com/sites/msteams_1fdd76';
+    const url=`${spBase}/_api/web/lists/getbytitle('${listName}')/items(${itemId})/AttachmentFiles/add(FileName='${encodeURIComponent(fname)}')`;
     const r=await fetch(url,{
       method:'POST',
       headers:{
         Authorization:`Bearer ${t}`,
+        Accept:'application/json;odata=nometadata',
         'X-RequestDigest':'0x0',
+        'Content-Type':'application/octet-stream',
       },
-      body:formData
+      body:arrayBuffer
     });
     if(!r.ok){
       const err=await r.json().catch(()=>({}));
-      // ลอง PUT /$value แทน
-      const url2=`${SITE_PATH}/lists/${listName}/items/${itemId}/attachments/${encodeURIComponent(fname)}/$value`;
-      const r2=await fetch(url2,{method:'PUT',headers:{Authorization:`Bearer ${t}`,'Content-Type':file.type||'application/octet-stream'},body:arrayBuffer});
-      if(!r2.ok){ const e2=await r2.json().catch(()=>({error:{message:r2.statusText}})); throw new Error(e2?.error?.message||r2.statusText); }
+      throw new Error(err?.error?.message||r.statusText||`HTTP ${r.status}`);
     }
     toast(`Upload ${fname} สำเร็จ ✓`);
     loadDocChecklist();
