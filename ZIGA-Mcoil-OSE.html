@@ -841,6 +841,7 @@ function addLineItem(data={}){
     <td><button class="btn-del-row" onclick="removeLineItem(${id})">×</button></td>`;
   tbody.appendChild(tr);
   renumberRows();
+  if(data.weight||data.price) calcLineTotal(id);
 }
 function removeLineItem(id){
   if(lineItems.length<=1){ toast('ต้องมีอย่างน้อย 1 รายการ'); return; }
@@ -1030,7 +1031,7 @@ async function loadLCRecord(){
   document.getElementById('lc-po-badge').textContent=po?.[F.POStatus]||'';
   lcItemId=null;
   try{
-    const items=await getListItems(L2,'*',`fields/Title eq 'LC-${pono}'`);
+    const items=await getListItems(L2,'*',`fields/Title eq '${pono}'`);
     if(items.length){
       const lc=items[0]; lcItemId=lc.id;
       document.getElementById('lc-no').value=lc.LCNo||'';
@@ -1080,7 +1081,7 @@ async function saveLC(){
   const thbRaw=document.getElementById('fx-thb').value.replace(/,/g,'');
   const toISO=v=>v?new Date(v).toISOString():null;
   const fields={
-    Title:`LC-${pono}`, PONo:pono,
+    Title:pono, PONo:pono,
     LCNo:document.getElementById('lc-no').value||null,
     Bank:document.getElementById('lc-bank').value||null,
     LCOpenDate:toISO(document.getElementById('lc-open').value),
@@ -1103,14 +1104,18 @@ async function saveLC(){
     TRRepaidAmountTHB:parseFloat(document.getElementById('tr-repaid-amount').value)||null,
     TRInterestPaid:parseFloat(document.getElementById('tr-interest-paid').value)||null,
     M2Status:document.getElementById('m2-status').value||null,
-    Remark:document.getElementById('lc-remark').value||null
+    Remark:document.getElementById('lc-remark').value||null,
+    PONo:pono
   };
+  const m2s=document.getElementById('m2-status').value;
+  const l1StatusMap={'รอเปิด LC':'2.Confirmed','เปิด LC แล้ว':'3.LC Opened','เปิด TR แล้ว':'3.LC Opened','Cashier Check แล้ว':'4.Shipped','จ่ายคืน TR แล้ว':'6.Complete'};
   const errEl=document.getElementById('lc-save-err'); errEl.style.display='none';
   try{
     if(lcItemId) await updateListItem(L2,lcItemId,fields);
     else await createListItem(L2,fields);
     const po=poData.find(p=>p.Title===pono);
-    if(po?.id) await updateListItem(L1,po.id,{[F.HasLC]:true,[F.POStatus]:'3.LC Opened'}).catch(()=>{});
+    const newL1Status=l1StatusMap[m2s]||'3.LC Opened';
+    if(po?.id) await updateListItem(L1,po.id,{[F.HasLC]:true,[F.POStatus]:newL1Status}).catch(()=>{});
     toast('บันทึก LC/FX/TR สำเร็จ ✓');
     poData=[]; loadPOList(); loadBankSummary();
   } catch(e){ errEl.textContent='บันทึกไม่ได้: '+e.message; errEl.style.display='block'; }
@@ -1236,7 +1241,7 @@ async function loadDocChecklist(){
     // หา item id ของแต่ละ list
     const [l1Items,l2Items,l3Items]=await Promise.all([
       getListItems(L1,'Title',`fields/Title eq '${pono}'`),
-      getListItems(L2,'Title',`fields/Title eq 'LC-${pono}'`).catch(()=>[]),
+      getListItems(L2,'Title',`fields/Title eq '${pono}'`).catch(()=>[]),
       getListItems(L3,'Title',`fields/Title eq '${pono}'`).catch(()=>[])
     ]);
     const l1id=l1Items[0]?.id, l2id=l2Items[0]?.id, l3id=l3Items[0]?.id;
