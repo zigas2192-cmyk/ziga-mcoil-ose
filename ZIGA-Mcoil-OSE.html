@@ -345,6 +345,7 @@ tr:hover td{background:var(--gray);}
           <select id="lc-po-select" onchange="loadLCRecord()"><option value="">-- เลือก PO --</option></select>
         </div>
       </div>
+      <div style="margin-bottom:8px;"><button class="btn btn-sm" onclick="debugL2Columns()">🔍 Debug L2 Column Names</button></div>
       <div id="lc-form" style="display:none;">
         <div class="card">
           <div class="card-header">
@@ -571,6 +572,15 @@ async function loadChoices(){
 }
 function makeOpts(arr,sel='',ph='-- เลือก --'){
   return `<option value="">${ph}</option>`+arr.map(v=>`<option value="${v}"${v===sel?' selected':''}>${v}</option>`).join('');
+}
+
+
+async function debugL2Columns(){
+  try{
+    const cols = await graphGet(`${SITE_PATH}/lists/${L2}/columns`);
+    const names = cols.value.map(c=>`${c.displayName} → internal: ${c.name}`).join('\n');
+    alert('L2 Columns:\n' + names);
+  } catch(e){ alert('Error: '+e.message); }
 }
 
 // ── MSAL ─────────────────────────────────────────────────────
