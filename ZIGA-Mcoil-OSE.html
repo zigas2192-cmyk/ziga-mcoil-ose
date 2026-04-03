@@ -217,8 +217,27 @@ tr:hover td{background:var(--gray);}
           <span class="card-title">รายการ PO</span>
           <div style="display:flex;gap:8px;">
             <button class="btn btn-sm" onclick="loadPOList()">↻ รีเฟรช</button>
+            <button class="btn btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
             <button class="btn btn-sm btn-primary" onclick="newPO()">+ สร้าง PO ใหม่</button>
           </div>
+        </div>
+        <!-- Filter bar -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+          <input id="f-search" type="text" placeholder="🔍 ค้นหา PO No. หรือ Supplier..." style="padding:6px 10px;border:1px solid var(--border-strong);border-radius:var(--radius);font-size:13px;min-width:220px;flex:1;" oninput="applyFilter()"/>
+          <select id="f-status" style="padding:6px 10px;border:1px solid var(--border-strong);border-radius:var(--radius);font-size:13px;" onchange="applyFilter()">
+            <option value="">ทุกสถานะ</option>
+            <option value="1.Draft">1.Draft</option>
+            <option value="2.Confirmed">2.Confirmed</option>
+            <option value="3.LC Opened">3.LC Opened</option>
+            <option value="4.Shipped">4.Shipped</option>
+            <option value="5.Arrived">5.Arrived</option>
+            <option value="6.Complete">6.Complete</option>
+          </select>
+          <select id="f-supplier-filter" style="padding:6px 10px;border:1px solid var(--border-strong);border-radius:var(--radius);font-size:13px;" onchange="applyFilter()">
+            <option value="">ทุก Supplier</option>
+          </select>
+          <button class="btn btn-sm btn-ghost" onclick="clearFilter()">✕ ล้าง</button>
+          <span id="filter-count" style="font-size:12px;color:var(--muted);align-self:center;"></span>
         </div>
         <div id="po-loading" class="alert alert-info" style="display:none;">กำลังโหลด...</div>
         <div id="po-error" class="alert alert-err" style="display:none;"></div>
@@ -543,7 +562,12 @@ async function getToken(){
   try{ return (await msalApp.acquireTokenSilent({scopes:SCOPES,account:currentAccount})).accessToken; }
   catch{ return (await msalApp.acquireTokenPopup({scopes:SCOPES})).accessToken; }
 }
-async function graphGet(url){ const t=await getToken(); const r=await fetch(url,{headers:{Authorization:`Bearer ${t}`}}); if(!r.ok)throw new Error((await r.json()).error?.message||r.statusText); return r.json(); }
+async function graphGet(url){
+  const t=await getToken();
+  const r=await fetch(url,{headers:{Authorization:`Bearer ${t}`,'Prefer':'HonorNonIndexedQueriesWarningMayFailRandomly'}});
+  if(!r.ok)throw new Error((await r.json()).error?.message||r.statusText);
+  return r.json();
+}
 async function graphPost(url,body){ const t=await getToken(); const r=await fetch(url,{method:'POST',headers:{Authorization:`Bearer ${t}`,'Content-Type':'application/json'},body:JSON.stringify(body)}); if(!r.ok){const e=await r.json(); throw new Error(e?.error?.message||r.statusText);} return r.json(); }
 async function graphPatch(url,body){ const t=await getToken(); const r=await fetch(url,{method:'PATCH',headers:{Authorization:`Bearer ${t}`,'Content-Type':'application/json'},body:JSON.stringify(body)}); if(!r.ok)throw new Error((await r.json()).error?.message||r.statusText); return r.json(); }
 async function graphPostBinary(url,data,contentType){ const t=await getToken(); const r=await fetch(url,{method:'POST',headers:{Authorization:`Bearer ${t}`,'Content-Type':contentType},body:data}); if(!r.ok)throw new Error((await r.json()).error?.message||r.statusText); return r.json(); }
@@ -602,8 +626,8 @@ async function loadPOList(){
       }
       const lineCount = p[F.SteelSize]?`<span class="badge badge-blue" style="font-size:10px;">มีข้อมูล</span>`:'<span style="color:var(--hint);font-size:11px;">—</span>';
       tbody.innerHTML+=`
-      <tr style="cursor:pointer;" onclick="toggleLines('${p.Title}',this)">
-        <td style="color:var(--hint);font-size:12px;" id="arr-${p.Title}">▶</td>
+      <tr id="arr-${p.Title}" style="cursor:pointer;" onclick="toggleLines('${p.Title}',this)">
+        <td style="color:var(--hint);font-size:12px;" id="arr-icon-${p.Title}">▶</td>
         <td><strong>${p.Title}</strong></td>
         <td>${date}</td><td>${p[F.Supplier]||'—'}</td>
         <td id="li-badge-${p.Title}"><span class="badge badge-gray" style="font-size:10px;">กด ▶ ดู</span></td>
@@ -627,6 +651,7 @@ async function loadPOList(){
     document.getElementById('m-wait-lc').textContent=waitLC;
     document.getElementById('m-transit').textContent=transit;
     populatePOSelects();
+    populateSupplierFilter();
   } catch(e){
     loading.style.display='none';
     err.textContent='โหลดไม่ได้: '+e.message; err.style.display='block';
@@ -635,7 +660,7 @@ async function loadPOList(){
 
 async function toggleLines(pono, row){
   const expRow=document.getElementById(`expand-${pono}`);
-  const arr=document.getElementById(`arr-${pono}`);
+  const arr=document.getElementById(`arr-icon-${pono}`);
   const content=document.getElementById(`li-content-${pono}`);
   const hidden=expRow.style.display==='none';
   expRow.style.display=hidden?'table-row':'none';
@@ -663,6 +688,74 @@ function openLC(pono){ document.getElementById('lc-po-select').value=pono; switc
 function openShip(pono){ document.getElementById('sh-po-select').value=pono; switchTab(3); loadShipRecord(); }
 function openDocs(pono){ document.getElementById('doc-po-select').value=pono; switchTab(4); loadDocChecklist(); }
 function newPO(){ clearForm(); switchTab(1); }
+
+// ── FILTER ────────────────────────────────────────────────────
+function applyFilter(){
+  const search=(document.getElementById('f-search').value||'').toLowerCase();
+  const status=document.getElementById('f-status').value;
+  const supplier=document.getElementById('f-supplier-filter').value;
+  const rows=document.querySelectorAll('#po-tbody tr[id^="arr-"]');
+  let visible=0;
+  rows.forEach(row=>{
+    const pono=row.querySelector('td:nth-child(2)')?.textContent?.toLowerCase()||'';
+    const sup=row.querySelector('td:nth-child(4)')?.textContent?.toLowerCase()||'';
+    const st=row.querySelector('.badge')?.textContent||'';
+    const expandRow=document.getElementById(`expand-${row.id.replace('arr-','')}`);
+    const matchSearch=!search||(pono.includes(search)||sup.includes(search));
+    const matchStatus=!status||st===status;
+    const matchSupplier=!supplier||sup.includes(supplier.toLowerCase());
+    const show=matchSearch&&matchStatus&&matchSupplier;
+    row.style.display=show?'':'none';
+    if(expandRow) expandRow.style.display='none'; // collapse on filter
+    if(show) visible++;
+  });
+  const total=rows.length;
+  const countEl=document.getElementById('filter-count');
+  if(countEl) countEl.textContent=search||status||supplier?`แสดง ${visible} / ${total} รายการ`:'';
+}
+
+function clearFilter(){
+  document.getElementById('f-search').value='';
+  document.getElementById('f-status').value='';
+  document.getElementById('f-supplier-filter').value='';
+  applyFilter();
+}
+
+function populateSupplierFilter(){
+  const sel=document.getElementById('f-supplier-filter'); if(!sel) return;
+  const suppliers=[...new Set(poData.map(p=>p[F.Supplier]).filter(Boolean))];
+  sel.innerHTML='<option value="">ทุก Supplier</option>';
+  suppliers.forEach(s=>{ sel.innerHTML+=`<option value="${s}">${s}</option>`; });
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────
+function exportCSV(){
+  if(!poData.length){ toast('ยังไม่มีข้อมูล'); return; }
+  const headers=['PO No.','วันที่ PO','Supplier','SteelSize','น้ำหนัก (ต.)','มูลค่า (USD)','สถานะ','Lead Time (วัน)','วันส่งมอบที่ตกลง'];
+  const rows=poData.map(p=>{
+    const ship=shipData.find(s=>s.Title===p.Title);
+    let leadDays='';
+    if(p[F.PODate]&&ship?.ActualArrival){
+      leadDays=Math.round((new Date(ship.ActualArrival)-new Date(p[F.PODate]))/(864e5));
+    }
+    return [
+      p.Title||'',
+      p[F.PODate]?p[F.PODate].substring(0,10):'',
+      p[F.Supplier]||'',
+      p[F.SteelSize]||'',
+      p[F.TotalWeightTon]||'',
+      p[F.TotalUSD]||'',
+      p[F.POStatus]||'',
+      leadDays,
+      p[F.AgreedDelivery]?p[F.AgreedDelivery].substring(0,10):'',
+    ];
+  });
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`ZIGA_PO_${new Date().toISOString().substring(0,10)}.csv`; a.click();
+  toast('Export CSV สำเร็จ ✓');
+}
 
 function populatePOSelects(){
   if(!poData.length) return;
