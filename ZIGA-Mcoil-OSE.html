@@ -262,13 +262,24 @@ tr:hover td{background:var(--gray);}
         <div class="card-header"><span class="card-title" id="s1-title">สร้าง PO ใหม่</span></div>
         <div class="form-grid-3">
           <div class="field"><label>PO No.<span class="req">*</span></label><input id="f-pono" placeholder="เช่น PO2026-004"/></div>
-          <div class="field"><label>วันที่ PO<span class="req">*</span></label><input id="f-podate" type="date"/></div>
+          <div class="field"><label>วันที่ PO<span class="req">*</span></label><input id="f-podate" type="date" oninput="calcLeadtime()"/></div>
           <div class="field"><label>Supplier<span class="req">*</span></label><select id="f-supplier"><option value="">-- เลือก --</option></select></div>
         </div>
         <div class="form-grid-3">
           <div class="field"><label>Contract No.</label><input id="f-contract" placeholder="เช่น HF00001004"/></div>
           <div class="field"><label>Incoterms</label><select id="f-incoterms"><option value="">-- เลือก --</option></select></div>
           <div class="field"><label>Payment Terms</label><input id="f-payterms" placeholder="เช่น LC at sight"/></div>
+        </div>
+        <div class="form-grid-3">
+          <div class="field">
+            <label>กำหนดการเรือออก (Agreed Delivery)<span style="color:var(--hint);font-size:10px;margin-left:4px;">Supplier แจ้ง</span></label>
+            <input id="f-delivery" type="date" oninput="calcLeadtime()"/>
+          </div>
+          <div class="field">
+            <label>Lead Time <span style="color:var(--hint);font-size:10px;">(อัตโนมัติ = เรือออก − วันที่ Contract)</span></label>
+            <input id="f-leadtime" readonly placeholder="— วัน" style="background:var(--gray);color:var(--muted);"/>
+          </div>
+          <div class="field"><label>หมายเหตุ</label><textarea id="f-remark" placeholder="หมายเหตุเพิ่มเติม..." style="min-height:38px;"></textarea></div>
         </div>
       </div>
 
@@ -303,17 +314,6 @@ tr:hover td{background:var(--gray);}
             </tfoot>
           </table>
         </div>
-      </div>
-
-      <!-- Logistics -->
-      <div class="card">
-        <div class="card-header"><span class="card-title">Logistics</span></div>
-        <div class="form-grid-3">
-          <div class="field"><label>Port of Loading</label><input id="f-portload" placeholder="เช่น Tianjin"/></div>
-          <div class="field"><label>Port of Destination</label><input id="f-portdest" placeholder="เช่น Laem Chabang"/></div>
-          <div class="field"><label>วันที่ส่งมอบที่ตกลง</label><input id="f-delivery" type="date"/></div>
-        </div>
-        <div class="field"><label>หมายเหตุ</label><textarea id="f-remark" placeholder="หมายเหตุเพิ่มเติม..."></textarea></div>
       </div>
 
       <div id="save-err" class="alert alert-err" style="display:none;"></div>
@@ -386,19 +386,67 @@ tr:hover td{background:var(--gray);}
           </div>
           <!-- TR -->
           <div style="border-top:1px solid var(--border);margin:16px 0 12px;"></div>
-          <div class="section-label">Trust Receipt (TR) — ชำระคืน Bank</div>
+          <div class="section-label">Trust Receipt (TR)</div>
           <div class="form-grid-3" style="margin-bottom:12px;">
             <div class="field"><label>TR No.</label><input id="tr-no" placeholder="เช่น TR2026-001"/></div>
-            <div class="field"><label>วันครบกำหนด TR</label><input id="tr-due" type="date"/></div>
-            <div class="field"><label>สถานะ TR</label>
-              <select id="tr-status"><option value="">— ยังไม่มี TR —</option><option>รอจ่าย</option><option>จ่ายแล้ว</option></select>
+            <div class="field"><label>วันที่เปิด TR</label><input id="tr-open-date" type="date"/></div>
+            <div class="field"><label>วันครบกำหนด TR</label><input id="tr-due" type="date" oninput="calcTRDaysLeft()"/></div>
+          </div>
+          <div class="form-grid-3" style="margin-bottom:12px;">
+            <div class="field"><label>ยอด TR (THB)</label><input id="tr-amount-thb" type="number" step="0.01" placeholder="ยอดที่ธนาคารออกให้"/></div>
+            <div class="field"><label>ดอกเบี้ย TR (% ต่อปี)</label><input id="tr-interest-rate" type="number" step="0.01" placeholder="เช่น 5.25"/></div>
+            <div class="field">
+              <label>วันคงเหลือ TR <span style="color:var(--hint);font-size:10px;">(อัตโนมัติ)</span></label>
+              <input id="tr-days-left" readonly placeholder="— วัน" style="background:var(--gray);color:var(--muted);"/>
             </div>
           </div>
           <div class="form-grid-2" style="margin-bottom:12px;">
-            <div class="field"><label>วันที่จ่ายจริง</label><input id="tr-paid-date" type="date"/></div>
-            <div class="field"><label>จำนวนที่จ่าย (THB)</label><input id="tr-amount-thb" type="number" step="0.01"/></div>
+            <div class="field"><label>สถานะ TR</label>
+              <select id="tr-status">
+                <option value="">— ยังไม่มี TR —</option>
+                <option>ยังไม่เปิด</option>
+                <option>เปิดแล้ว</option>
+                <option>ใกล้ครบกำหนด</option>
+                <option>จ่ายคืนแล้ว</option>
+              </select>
+            </div>
+            <div class="field" style="align-self:end;">
+              <div id="tr-alert" style="display:none;padding:7px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;background:var(--warn-bg);color:var(--warn);">⚠ ใกล้ครบกำหนด TR</div>
+            </div>
           </div>
-          <div class="field"><label>หมายเหตุ</label><textarea id="lc-remark"></textarea></div>
+
+          <!-- Cashier Check -->
+          <div style="border-top:1px solid var(--border);margin:16px 0 12px;"></div>
+          <div class="section-label">Cashier Check — ธนาคารจ่ายให้ Supplier</div>
+          <div class="form-grid-3" style="margin-bottom:12px;">
+            <div class="field"><label>วันที่ Cashier Check</label><input id="cc-date" type="date"/></div>
+            <div class="field"><label>เลขอ้างอิง Cashier Check</label><input id="cc-ref" placeholder="เลข reference จากธนาคาร"/></div>
+          </div>
+
+          <!-- จ่ายคืน TR -->
+          <div style="border-top:1px solid var(--border);margin:16px 0 12px;"></div>
+          <div class="section-label">บริษัทจ่ายคืน TR</div>
+          <div class="form-grid-3" style="margin-bottom:12px;">
+            <div class="field"><label>วันที่จ่ายคืน TR จริง</label><input id="tr-paid-date" type="date"/></div>
+            <div class="field"><label>ยอดจ่ายคืน (THB)</label><input id="tr-repaid-amount" type="number" step="0.01" placeholder="เงินต้น + ดอกเบี้ย"/></div>
+            <div class="field"><label>ดอกเบี้ย TR ที่จ่ายจริง (THB)</label><input id="tr-interest-paid" type="number" step="0.01"/></div>
+          </div>
+
+          <!-- M2 Status รวม -->
+          <div style="border-top:1px solid var(--border);margin:16px 0 12px;"></div>
+          <div class="form-grid-2" style="margin-bottom:12px;">
+            <div class="field"><label>สถานะ M2 รวม</label>
+              <select id="m2-status">
+                <option value="">— เลือกสถานะ —</option>
+                <option>รอเปิด LC</option>
+                <option>เปิด LC แล้ว</option>
+                <option>เปิด TR แล้ว</option>
+                <option>Cashier Check แล้ว</option>
+                <option>จ่ายคืน TR แล้ว</option>
+              </select>
+            </div>
+            <div class="field"><label>หมายเหตุ</label><textarea id="lc-remark" style="min-height:38px;"></textarea></div>
+          </div>
         </div>
         <div id="lc-save-err" class="alert alert-err" style="display:none;"></div>
         <div class="form-actions">
@@ -820,8 +868,32 @@ function calcGrandTotal(){
   const uEl=document.getElementById('li-total-usd'); if(uEl) uEl.textContent=tu?tu.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
 }
 
+function calcLeadtime(){
+  const delivDate=document.getElementById('f-delivery').value;
+  const contractDate=document.getElementById('f-podate').value;
+  const el=document.getElementById('f-leadtime');
+  if(!el) return;
+  if(delivDate && contractDate){
+    const days=Math.round((new Date(delivDate)-new Date(contractDate))/(1000*60*60*24));
+    el.value=days>=0?`${days} วัน`:`(${Math.abs(days)} วัน ก่อน PO)`;
+  } else { el.value=''; }
+}
+
+function calcTRDaysLeft(){
+  const dueDate=document.getElementById('tr-due').value;
+  const el=document.getElementById('tr-days-left');
+  const alertEl=document.getElementById('tr-alert');
+  if(!el) return;
+  if(dueDate){
+    const days=Math.round((new Date(dueDate)-new Date())/(1000*60*60*24));
+    el.value=days>=0?`${days} วัน`:`เกินกำหนด ${Math.abs(days)} วัน`;
+    el.style.color=days<=7?(days<0?'var(--danger)':'var(--warn)'):'var(--muted)';
+    if(alertEl) alertEl.style.display=days<=7?'block':'none';
+  } else { el.value=''; if(alertEl) alertEl.style.display='none'; }
+}
+
 function clearForm(){
-  ['f-pono','f-podate','f-contract','f-payterms','f-portload','f-portdest','f-delivery','f-remark'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['f-pono','f-podate','f-contract','f-payterms','f-delivery','f-leadtime','f-remark'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('f-pono').readOnly=false;
   document.getElementById('f-supplier').value='';
   document.getElementById('f-incoterms').value=choicesCache.Incoterms[0]||'';
@@ -897,6 +969,7 @@ async function editPO(pono){
     document.getElementById('f-payterms').value=po[F.PaymentTerms]||'';
     document.getElementById('f-delivery').value=po[F.AgreedDelivery]?.substring(0,10)||'';
     document.getElementById('f-remark').value=po[F.Remark]||'';
+    calcLeadtime();
     const liItems=await getListItems(L1b,'Title,SteelSize,SteelThicknessSpec_AX,field_6,field_7,field_9,field_10,field_11');
     const myLines=liItems.filter(li=>li.Title?.startsWith(pono+'-')).sort((a,b)=>a.Title.localeCompare(b.Title));
     lineItems=[]; liCounter=0; document.getElementById('li-tbody').innerHTML='';
@@ -969,12 +1042,19 @@ async function loadLCRecord(){
       document.getElementById('fx-type').value=lc.FXType||'Forward';
       document.getElementById('fx-date').value=lc.FXDate?.substring(0,10)||'';
       document.getElementById('tr-no').value=lc.TRNo||'';
+      document.getElementById('tr-open-date').value=lc.TROpenDate?.substring(0,10)||'';
       document.getElementById('tr-due').value=lc.TRDueDate?.substring(0,10)||'';
-      document.getElementById('tr-status').value=lc.TRStatus||'';
-      document.getElementById('tr-paid-date').value=lc.TRPaidDate?.substring(0,10)||'';
       document.getElementById('tr-amount-thb').value=lc.TRAmountTHB||'';
+      document.getElementById('tr-interest-rate').value=lc.TRInterestRate||'';
+      document.getElementById('tr-status').value=lc.TRStatus||'';
+      document.getElementById('cc-date').value=lc.CashierCheckDate?.substring(0,10)||'';
+      document.getElementById('cc-ref').value=lc.CashierCheckRef||'';
+      document.getElementById('tr-paid-date').value=lc.TRRepaidDate?.substring(0,10)||'';
+      document.getElementById('tr-repaid-amount').value=lc.TRRepaidAmountTHB||'';
+      document.getElementById('tr-interest-paid').value=lc.TRInterestPaid||'';
+      document.getElementById('m2-status').value=lc.M2Status||'';
       document.getElementById('lc-remark').value=lc.Remark||'';
-      calcLCRemain(); calcTHB();
+      calcLCRemain(); calcTHB(); calcTRDaysLeft();
     }
   } catch(e){ console.log('LC not found'); }
 }
@@ -1011,10 +1091,17 @@ async function saveLC(){
     FXDate:toISO(document.getElementById('fx-date').value),
     TotalTHB:parseFloat(thbRaw)||null,
     TRNo:document.getElementById('tr-no').value||null,
+    TROpenDate:toISO(document.getElementById('tr-open-date').value),
     TRDueDate:toISO(document.getElementById('tr-due').value),
-    TRStatus:document.getElementById('tr-status').value||null,
-    TRPaidDate:toISO(document.getElementById('tr-paid-date').value),
     TRAmountTHB:parseFloat(document.getElementById('tr-amount-thb').value)||null,
+    TRInterestRate:parseFloat(document.getElementById('tr-interest-rate').value)||null,
+    TRStatus:document.getElementById('tr-status').value||null,
+    CashierCheckDate:toISO(document.getElementById('cc-date').value),
+    CashierCheckRef:document.getElementById('cc-ref').value||null,
+    TRRepaidDate:toISO(document.getElementById('tr-paid-date').value),
+    TRRepaidAmountTHB:parseFloat(document.getElementById('tr-repaid-amount').value)||null,
+    TRInterestPaid:parseFloat(document.getElementById('tr-interest-paid').value)||null,
+    M2Status:document.getElementById('m2-status').value||null,
     Remark:document.getElementById('lc-remark').value||null
   };
   const errEl=document.getElementById('lc-save-err'); errEl.style.display='none';
