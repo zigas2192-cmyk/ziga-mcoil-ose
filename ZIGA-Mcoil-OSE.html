@@ -915,8 +915,10 @@ async function savePO(){
   const errEl=document.getElementById('save-err'); errEl.style.display='none';
   if(!pono||!supplier||!podate){ errEl.textContent='กรุณากรอก PO No., Supplier และวันที่ PO'; errEl.style.display='block'; return; }
   if(!lineItems.length){ errEl.textContent='กรุณาเพิ่มรายการสินค้า'; errEl.style.display='block'; return; }
+  // sync ค่าจาก DOM ก่อน validate
+  lineItems.forEach(li=>calcLineTotal(li.id));
   for(const li of lineItems){
-    if(!li.steelSize||!li.grade||!li.weight||!li.price){ errEl.textContent='กรุณากรอกข้อมูลให้ครบทุก Line Item'; errEl.style.display='block'; return; }
+    if(!li.steelSize||!li.grade||!li.weight||!li.price){ errEl.textContent='กรุณากรอกข้อมูลให้ครบทุก Line Item (row ที่ยังไม่ครบ)'; errEl.style.display='block'; return; }
   }
   const tw=lineItems.reduce((s,li)=>s+(li.weight||0),0);
   const tu=lineItems.reduce((s,li)=>s+(li.total||0),0);
@@ -975,8 +977,21 @@ async function editPO(pono){
     const liItems=await getListItems(L1b,'Title,SteelSize,SteelThicknessSpec_AX,field_6,field_7,field_9,field_10,field_11');
     const myLines=liItems.filter(li=>li.Title?.startsWith(pono+'-')).sort((a,b)=>a.Title.localeCompare(b.Title));
     lineItems=[]; liCounter=0; document.getElementById('li-tbody').innerHTML='';
-    if(myLines.length) myLines.forEach(li=>addLineItem({steelSize:li.SteelSize||'',steelThick:li.SteelThicknessSpec_AX||'',grade:li.field_6||'',coating:li.field_7||'',weight:li.field_9||'',price:li.field_10||''}));
-    else addLineItem();
+    if(myLines.length){
+      myLines.forEach(li=>{
+        addLineItem({steelSize:li.SteelSize||'',steelThick:li.SteelThicknessSpec_AX||'',grade:li.field_6||'',coating:li.field_7||'',weight:li.field_9||'',price:li.field_10||''});
+        // force-set values in case choices cache was empty during render
+        const id=liCounter;
+        const setVal=(elId,val)=>{ const el=document.getElementById(elId); if(el&&val) el.value=val; };
+        setVal(`li-size-${id}`, li.SteelSize||'');
+        setVal(`li-thick-${id}`, li.SteelThicknessSpec_AX||'');
+        setVal(`li-grade-${id}`, li.field_6||'');
+        setVal(`li-coating-${id}`, li.field_7||'');
+        setVal(`li-weight-${id}`, li.field_9||'');
+        setVal(`li-price-${id}`, li.field_10||'');
+        calcLineTotal(id);
+      });
+    } else addLineItem();
     document.getElementById('s1-title').textContent=`แก้ไข PO — ${pono}`;
     document.getElementById('save-icon').innerHTML='';
     document.getElementById('save-label').textContent='💾 อัปเดต PO';
