@@ -1096,7 +1096,7 @@ async function saveLC(){
   const thbRaw=document.getElementById('fx-thb').value.replace(/,/g,'');
   const toISO=v=>v?new Date(v).toISOString():null;
   const fields={
-    Title:pono, PONo:pono,
+    Title:pono,
     LCNo:document.getElementById('lc-no').value||null,
     Bank:document.getElementById('lc-bank').value||null,
     LCOpenDate:toISO(document.getElementById('lc-open').value),
@@ -1119,8 +1119,7 @@ async function saveLC(){
     TRRepaidAmountTHB:parseFloat(document.getElementById('tr-repaid-amount').value)||null,
     TRInterestPaid:parseFloat(document.getElementById('tr-interest-paid').value)||null,
     M2Status:document.getElementById('m2-status').value||null,
-    Remark:document.getElementById('lc-remark').value||null,
-    PONo:pono
+    Remark:document.getElementById('lc-remark').value||null
   };
   const m2s=document.getElementById('m2-status').value;
   const l1StatusMap={'รอเปิด LC':'2.Confirmed','เปิด LC แล้ว':'3.LC Opened','เปิด TR แล้ว':'3.LC Opened','Cashier Check แล้ว':'4.Shipped','จ่ายคืน TR แล้ว':'6.Complete'};
@@ -1192,7 +1191,7 @@ async function saveShipping(){
   const trucks=parseInt(document.getElementById('sh-trucks').value)||0;
   const toISO=v=>v?new Date(v).toISOString():null;
   const fields={
-    Title:pono, PONo:pono,
+    Title:pono,
     BLNo:document.getElementById('sh-blno').value||null,
     BLDate:toISO(document.getElementById('sh-bldate').value),
     VesselName:document.getElementById('sh-vessel').value||null,
