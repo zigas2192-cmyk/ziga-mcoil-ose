@@ -1273,7 +1273,17 @@ async function loadDocChecklist(){
       getListItems(L2,'Title',`fields/Title eq '${pono}'`).catch(()=>[]),
       getListItems(L3,'Title',`fields/Title eq '${pono}'`).catch(()=>[])
     ]);
-    const l1id=l1Items[0]?.id, l2id=l2Items[0]?.id, l3id=l3Items[0]?.id;
+    const l1id=l1Items[0]?.id;
+    let l2id=l2Items[0]?.id;
+    let l3id=l3Items[0]?.id;
+    // ถ้า L2 ไม่มี record ให้สร้าง stub ก่อน (เพื่อ upload attachment ได้)
+    if(!l2id){
+      try{ const r=await createListItem(L2,{Title:pono}); l2id=r.id; } catch(e){ console.log('L2 stub create:',e.message); }
+    }
+    // ถ้า L3 ไม่มี record ให้สร้าง stub
+    if(!l3id){
+      try{ const r=await createListItem(L3,{Title:pono}); l3id=r.id; } catch(e){ console.log('L3 stub create:',e.message); }
+    }
     // โหลด attachments แต่ละ list
     const [atL1,atL2,atL3]=await Promise.all([
       l1id?graphGet(`${SITE_PATH}/lists/${L1}/items/${l1id}/attachments`).then(r=>r.value||[]).catch(()=>[]):[],
@@ -1338,16 +1348,24 @@ async function handleFileUpload(event){
   try{
     const arrayBuffer=await file.arrayBuffer();
     const t=await getToken();
-    // SharePoint attachment API: PUT /$value พร้อม filename ใน URL
-    const url=`${SITE_PATH}/lists/${listName}/items/${itemId}/attachments/${encodeURIComponent(fname)}/$value`;
+    // SharePoint attachment: POST multipart/form-data
+    const formData=new FormData();
+    formData.append('file', new Blob([arrayBuffer],{type:file.type||'application/octet-stream'}), fname);
+    const url=`${SITE_PATH}/lists/${listName}/items/${itemId}/attachments`;
     const r=await fetch(url,{
-      method:'PUT',
-      headers:{Authorization:`Bearer ${t}`,'Content-Type':file.type||'application/octet-stream'},
-      body:arrayBuffer
+      method:'POST',
+      headers:{
+        Authorization:`Bearer ${t}`,
+        'X-RequestDigest':'0x0',
+      },
+      body:formData
     });
     if(!r.ok){
       const err=await r.json().catch(()=>({}));
-      throw new Error(err?.error?.message||r.statusText);
+      // ลอง PUT /$value แทน
+      const url2=`${SITE_PATH}/lists/${listName}/items/${itemId}/attachments/${encodeURIComponent(fname)}/$value`;
+      const r2=await fetch(url2,{method:'PUT',headers:{Authorization:`Bearer ${t}`,'Content-Type':file.type||'application/octet-stream'},body:arrayBuffer});
+      if(!r2.ok){ const e2=await r2.json().catch(()=>({error:{message:r2.statusText}})); throw new Error(e2?.error?.message||r2.statusText); }
     }
     toast(`Upload ${fname} สำเร็จ ✓`);
     loadDocChecklist();
