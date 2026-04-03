@@ -245,12 +245,12 @@ tr:hover td{background:var(--gray);}
           <table>
             <thead><tr>
               <th style="width:24px;"></th>
-              <th>PO No.</th><th>วันที่</th><th>Supplier</th>
+              <th>PO No.</th><th>วันที่</th><th>Supplier</th><th>Contract No.</th>
               <th>รายการ</th><th style="text-align:right;">น้ำหนัก</th>
               <th style="text-align:right;">USD</th><th style="text-align:center;">Lead Time</th>
               <th>สถานะ</th><th></th>
             </tr></thead>
-            <tbody id="po-tbody"><tr><td colspan="10"><div class="empty">กำลังโหลด...</div></td></tr></tbody>
+            <tbody id="po-tbody"><tr><td colspan="11"><div class="empty">กำลังโหลด...</div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -651,11 +651,11 @@ async function loadPOList(){
   err.style.display='none'; loading.style.display='block'; tbody.innerHTML='';
   try{
     [poData,shipData]=await Promise.all([
-      getListItems(L1,`Title,${F.PODate},${F.Supplier},${F.SteelSize},${F.TotalWeightTon},${F.TotalUSD},${F.POStatus},${F.AgreedDelivery}`),
+      getListItems(L1,`Title,${F.PODate},${F.Supplier},${F.ContractNo},${F.SteelSize},${F.TotalWeightTon},${F.TotalUSD},${F.POStatus},${F.AgreedDelivery}`),
       getListItems(L3,'Title,ActualArrival').catch(()=>[])
     ]);
     loading.style.display='none';
-    if(!poData.length){ tbody.innerHTML='<tr><td colspan="10"><div class="empty">ยังไม่มีข้อมูล PO</div></td></tr>'; return; }
+    if(!poData.length){ tbody.innerHTML='<tr><td colspan="11"><div class="empty">ยังไม่มีข้อมูล PO</div></td></tr>'; return; }
     let totalUSD=0,waitLC=0,transit=0;
     poData.forEach(p=>{
       totalUSD+=parseFloat(p[F.TotalUSD])||0;
@@ -678,6 +678,7 @@ async function loadPOList(){
         <td style="color:var(--hint);font-size:12px;" id="arr-icon-${p.Title}">▶</td>
         <td><strong>${p.Title}</strong></td>
         <td>${date}</td><td>${p[F.Supplier]||'—'}</td>
+        <td style="color:var(--muted);font-size:12px;">${p[F.ContractNo]||'—'}</td>
         <td id="li-badge-${p.Title}"><span class="badge badge-gray" style="font-size:10px;">กด ▶ ดู</span></td>
         <td style="text-align:right;">${p[F.TotalWeightTon]?Number(p[F.TotalWeightTon]).toLocaleString()+' ต.':'—'}</td>
         <td style="text-align:right;">${p[F.TotalUSD]?Number(p[F.TotalUSD]).toLocaleString(undefined,{maximumFractionDigits:0}):'—'}</td>
@@ -691,7 +692,7 @@ async function loadPOList(){
         </td>
       </tr>
       <tr id="expand-${p.Title}" style="display:none;" class="expand-row">
-        <td colspan="10"><div id="li-content-${p.Title}" style="padding:0 0 0 32px;"></div></td>
+        <td colspan="11"><div id="li-content-${p.Title}" style="padding:0 0 0 32px;"></div></td>
       </tr>`;
     });
     document.getElementById('m-total').textContent=poData.length;
