@@ -1333,19 +1333,25 @@ function triggerUpload(listName,itemId,docKey){
 async function handleFileUpload(event){
   const file=event.target.files[0]; if(!file||!pendingUploadDoc) return;
   const {listName,itemId,docKey}=pendingUploadDoc;
-  // ตั้งชื่อไฟล์เป็น KEY_originalname
   const fname=`${docKey}_${file.name}`;
   toast('กำลัง upload...');
   try{
     const arrayBuffer=await file.arrayBuffer();
-    await graphPostBinary(
-      `${SITE_PATH}/lists/${listName}/items/${itemId}/attachments`,
-      arrayBuffer, file.type||'application/octet-stream'
-    );
+    const t=await getToken();
+    // SharePoint attachment API: PUT /$value พร้อม filename ใน URL
+    const url=`${SITE_PATH}/lists/${listName}/items/${itemId}/attachments/${encodeURIComponent(fname)}/$value`;
+    const r=await fetch(url,{
+      method:'PUT',
+      headers:{Authorization:`Bearer ${t}`,'Content-Type':file.type||'application/octet-stream'},
+      body:arrayBuffer
+    });
+    if(!r.ok){
+      const err=await r.json().catch(()=>({}));
+      throw new Error(err?.error?.message||r.statusText);
+    }
     toast(`Upload ${fname} สำเร็จ ✓`);
-    loadDocChecklist(); // refresh
+    loadDocChecklist();
   } catch(e){
-    // SP attachments ใช้ endpoint แบบ multipart
     toast('Upload ไม่ได้: '+e.message);
   }
   event.target.value=''; pendingUploadDoc=null;
